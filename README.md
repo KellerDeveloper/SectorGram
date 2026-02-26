@@ -214,3 +214,4 @@ npm test          # запустить все Jest‑тесты
 > 📖 **Подробная документация по Socket.io событиям**: см. [backend/SOCKET_EVENTS.md](./backend/SOCKET_EVENTS.md)
 
 # SectorGram
+# SectorGram
