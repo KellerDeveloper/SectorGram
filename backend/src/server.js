@@ -3,6 +3,7 @@ import { Server as SocketIOServer } from "socket.io";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { connectDatabase } from "./config/database.js";
+import { getSocketCorsOptions } from "./config/cors.js";
 import { authMiddleware as authMiddlewareExternal } from "./middleware/authMiddleware.js";
 import { createApp } from "./app.js";
 import User from "./models/User.js";
@@ -35,11 +36,7 @@ app.locals.chatHelpers = {
 };
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
-  cors: {
-    origin: "*", // при необходимости сузить до конкретных origin
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
+  cors: getSocketCorsOptions(),
 });
 
 // Отправка push-уведомления через Expo

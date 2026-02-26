@@ -8,23 +8,13 @@ import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import storyRoutes from "./routes/storyRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
+import { getHttpCorsOptions } from "./config/cors.js";
 
 dotenv.config();
 
-const { CORS_ORIGIN } = process.env;
-
-const allowedOrigins = CORS_ORIGIN
-  ? CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean)
-  : "*";
-
 export function createApp() {
   const app = express();
-
-  app.use(
-    cors({
-      origin: allowedOrigins,
-    })
-  );
+  app.use(cors(getHttpCorsOptions()));
 
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
