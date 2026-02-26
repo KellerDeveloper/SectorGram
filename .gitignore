@@ -1,0 +1,17 @@
+backend/.env
+backend/.env.local
+backend/.env.*.local
+
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+expo-debug.log
+
+dist
+build
+
+/.DS_Store
+**/.DS_Store
+

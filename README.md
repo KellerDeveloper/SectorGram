@@ -215,3 +215,4 @@ npm test          # запустить все Jest‑тесты
 
 # SectorGram
 # SectorGram
+# SectorGram
