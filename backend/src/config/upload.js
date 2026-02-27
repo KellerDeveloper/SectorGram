@@ -23,12 +23,14 @@ const storage = multer.diskStorage({
   },
 });
 
+// Лимит размера файла (в байтах).
+// Можно уменьшить/увеличить, но важно синхронизировать с nginx/proxy.
+export const VIDEO_NOTE_MAX_FILE_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
+
 export const videoNoteUpload = multer({
   storage,
   limits: {
-    // Лимит размера файла — подбери под себя.
-    // Важно синхронизировать его с nginx/proxy, чтобы не ловить 413.
-    fileSize: 50 * 1024 * 1024, // 50MB
+    fileSize: VIDEO_NOTE_MAX_FILE_SIZE_BYTES,
   },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype || !file.mimetype.startsWith("video/")) {
