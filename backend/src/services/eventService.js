@@ -45,6 +45,7 @@ export async function listEvents() {
   const now = new Date();
   const events = await Event.find({
     startsAt: { $gte: now },
+    status: { $ne: "cancelled" },
   })
     .sort({ startsAt: 1 })
     .populate("creatorId", "name avatar")
@@ -146,6 +147,7 @@ function mapEvent(eventDoc) {
     endsAt: event.endsAt,
     place: event.place,
     coverImage: event.coverImage,
+    status: event.status,
     creatorId: event.creatorId?._id?.toString?.() || event.creatorId?.toString(),
     creator: event.creatorId && event.creatorId.name
       ? {

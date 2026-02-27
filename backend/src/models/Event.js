@@ -47,6 +47,12 @@ const eventSchema = new mongoose.Schema(
       ref: "Chat",
       index: true,
     },
+    status: {
+      type: String,
+      enum: ["scheduled", "ongoing", "completed", "cancelled"],
+      default: "scheduled",
+      index: true,
+    },
   },
   {
     timestamps: true,
