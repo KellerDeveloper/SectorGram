@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { connectDatabase } from "./config/database.js";
 import { getSocketCorsOptions } from "./config/cors.js";
 import { authMiddleware as authMiddlewareExternal } from "./middleware/authMiddleware.js";
+import { errorHandler } from "./middleware/errorHandler.js";
 import { createApp } from "./app.js";
 import User from "./models/User.js";
 import Chat from "./models/Chat.js";
@@ -1197,6 +1198,10 @@ io.on("connection", async (socket) => {
     }
   });
 });
+
+// Централизованный обработчик ошибок для всех HTTP-роутов,
+// в том числе объявленных в этом файле
+app.use(errorHandler);
 
 // Подключение к БД и запуск сервера
 connectDatabase().then(() => {

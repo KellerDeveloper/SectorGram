@@ -8,7 +8,8 @@
     "dev": "nodemon src/server.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "view-db": "node scripts/view-db.js"
+    "view-db": "node scripts/view-db.js",
+    "clean-db": "node scripts/clean-db.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

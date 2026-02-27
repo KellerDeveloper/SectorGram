@@ -13,12 +13,37 @@ export function errorHandler(err, req, res, next) {
 
   const status = err.status || err.statusCode || 500;
 
-  // Если ошибка уже содержит безопасное для клиента сообщение
-  const message =
+  // Базовое сообщение для клиента
+  let message =
     typeof err === "string"
       ? err
       : err.message || "Внутренняя ошибка сервера";
 
-  res.status(status).json({ error: message });
+  let validationErrors = null;
+
+  // Детали валидации от express-validator (см. handleValidationErrors)
+  if (Array.isArray(err.details) && err.details.length > 0) {
+    validationErrors = err.details.map((e) => ({
+      field: e.param,
+      message: e.msg,
+      value: e.value,
+      location: e.location,
+    }));
+
+    // Если общее сообщение слишком общее, берем текст первой конкретной ошибки
+    if (message === "Ошибка валидации" && validationErrors[0]?.message) {
+      message = validationErrors[0].message;
+    }
+  }
+
+  const payload = {
+    error: message,
+  };
+
+  if (validationErrors) {
+    payload.validationErrors = validationErrors;
+  }
+
+  res.status(status).json(payload);
 }
 
