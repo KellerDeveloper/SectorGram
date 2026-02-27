@@ -10,7 +10,7 @@ import {
 import { connectSocket, getSocket } from "../api/socket";
 
 const MAX_PHOTO_BASE64 = 2 * 1024 * 1024;
-const MAX_VIDEO_BASE64 = 10 * 1024 * 1024;
+const MAX_VIDEO_BASE64 = 30 * 1024 * 1024;
 const MAX_AUDIO_BASE64 = 5 * 1024 * 1024;
 
 async function uriToDataUrl(uri) {
@@ -197,7 +197,7 @@ export function useMessageActions({
         const asset = result.assets[0];
         const base64 = await uriToDataUrl(asset.uri);
         if (base64.length > MAX_VIDEO_BASE64) {
-          Alert.alert("Ошибка", "Видео слишком большое (макс. 10MB). Выберите более короткий ролик.");
+          Alert.alert("Ошибка", "Видео слишком большое (макс. 30MB). Выберите более короткий ролик.");
           return;
         }
         const socket = getSocket() || connectSocket(token);
@@ -236,7 +236,7 @@ export function useMessageActions({
         const asset = result.assets[0];
         const base64 = await uriToDataUrl(asset.uri);
         if (base64.length > MAX_VIDEO_BASE64) {
-          Alert.alert("Ошибка", "Видео слишком большое (макс. 10MB). Запишите более короткий ролик.");
+          Alert.alert("Ошибка", "Видео слишком большое (макс. 30MB). Запишите более короткий ролик.");
           return;
         }
         const socket = getSocket() || connectSocket(token);
@@ -348,7 +348,7 @@ export function useMessageActions({
     try {
       const base64 = await uriToDataUrl(uri);
       if (base64.length > MAX_VIDEO_BASE64) {
-        Alert.alert("Ошибка", "Видео слишком большое (макс. 10MB). Запишите короче.");
+        Alert.alert("Ошибка", "Видео слишком большое (макс. 30MB). Запишите короче.");
         return;
       }
       const socket = getSocket() || connectSocket(token);
