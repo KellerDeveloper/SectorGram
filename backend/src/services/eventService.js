@@ -34,9 +34,8 @@ export async function createEvent({
 
   await event.save();
 
-  await event
-    .populate("creatorId", "name avatar")
-    .populate("participants", "name avatar");
+  await event.populate("creatorId", "name avatar");
+  await event.populate("participants", "name avatar");
 
   return mapEvent(event);
 }
@@ -92,10 +91,8 @@ export async function joinEvent({ eventId, userId }) {
       { $addToSet: { members: userObjId } }
     );
   }
-
-  await event
-    .populate("creatorId", "name avatar")
-    .populate("participants", "name avatar");
+  await event.populate("creatorId", "name avatar");
+  await event.populate("participants", "name avatar");
 
   return mapEvent(event);
 }
@@ -128,10 +125,8 @@ export async function leaveEvent({ eventId, userId }) {
       { $pull: { members: userObjId } }
     );
   }
-
-  await event
-    .populate("creatorId", "name avatar")
-    .populate("participants", "name avatar");
+  await event.populate("creatorId", "name avatar");
+  await event.populate("participants", "name avatar");
 
   return mapEvent(event);
 }
