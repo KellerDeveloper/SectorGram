@@ -12,6 +12,7 @@ import ProfileScreen from "./src/screens/ProfileScreen";
 import EditProfileScreen from "./src/screens/EditProfileScreen";
 import UserSearchScreen from "./src/screens/UserSearchScreen";
 import ForwardMessageScreen from "./src/screens/ForwardMessageScreen";
+import EventsScreen from "./src/screens/EventsScreen";
 import { AuthContext } from "./src/context/AuthContext";
 import { getStoredToken, removeToken, storeToken } from "./src/storage/tokenStorage";
 import { setAuthToken, api } from "./src/api/client";
@@ -182,6 +183,16 @@ export default function App() {
                 component={ForwardMessageScreen}
                 options={{ title: "Переслать сообщение" }}
               />
+              <Stack.Screen
+                name="Events"
+                component={EventsScreen}
+                options={{ title: "Мероприятия" }}
+              />
+              <Stack.Screen
+                name="Chat"
+                component={ChatScreen}
+                options={{ headerShown: false }}
+              />
             </>
           ) : (
             <>
@@ -215,6 +226,11 @@ export default function App() {
                 name="ForwardMessage"
                 component={ForwardMessageScreen}
                 options={{ title: "Переслать сообщение" }}
+              />
+              <Stack.Screen
+                name="Events"
+                component={EventsScreen}
+                options={{ title: "Мероприятия" }}
               />
             </>
           )}

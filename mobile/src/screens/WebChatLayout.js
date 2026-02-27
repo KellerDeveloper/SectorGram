@@ -157,6 +157,12 @@ export default function WebChatLayout({ navigation }) {
               >
                 <Text style={styles.searchButtonText}>🔍</Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate("Events")}
+                style={styles.searchButton}
+              >
+                <Text style={styles.searchButtonText}>📅</Text>
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
                 <Avatar name={user?.name || "U"} size={32} avatar={user?.avatar} />
               </TouchableOpacity>
