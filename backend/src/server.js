@@ -418,10 +418,25 @@ app.put("/users/me", authMiddleware, async (req, res) => {
 
 // ===== Socket.io =====
 io.use((socket, next) => {
-  const token = socket.handshake.auth?.token;
+  let token = socket.handshake.auth?.token;
+
+  // iOS/другие клиенты могут передать токен через query: ?token=...
+  if (!token && socket.handshake.query?.token) {
+    token = socket.handshake.query.token;
+  }
+
+  // Опционально — поддержка Authorization заголовка: "Bearer <token>"
+  if (!token && socket.handshake.headers?.authorization) {
+    const authHeader = socket.handshake.headers.authorization;
+    if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
+      token = authHeader.slice("Bearer ".length);
+    }
+  }
+
   if (!token) {
     return next(new Error("Токен не передан"));
   }
+
   try {
     const user = jwt.verify(token, JWT_SECRET);
     socket.user = user;
