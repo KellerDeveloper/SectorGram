@@ -24,7 +24,8 @@ export function errorHandler(err, req, res, next) {
   // Детали валидации от express-validator (см. handleValidationErrors)
   if (Array.isArray(err.details) && err.details.length > 0) {
     validationErrors = err.details.map((e) => ({
-      field: e.param,
+      // path для новых версий express-validator, param — для старых
+      field: e.path || e.param,
       message: e.msg,
       value: e.value,
       location: e.location,
