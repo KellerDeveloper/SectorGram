@@ -38,6 +38,7 @@ app.locals.chatHelpers = {
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: getSocketCorsOptions(),
+  allowEIO3: true,
 });
 
 // Отправка push-уведомления через Expo
