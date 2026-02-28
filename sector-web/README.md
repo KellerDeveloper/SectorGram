@@ -30,6 +30,8 @@ npm run build
 - Фронт раздаётся с **https://sector.moscow** (или www).
 - Бэкенд — **https://api.sector.moscow** (тот же сервер или отдельный).
 
+Готовый конфиг nginx и инструкция по деплою: **[deploy/README.md](../deploy/README.md)** (файл конфига: `deploy/nginx/sector.moscow.conf`).
+
 Если API отдаётся с того же домена по пути `/api`, уберите или обнулите `VITE_API_URL` в `.env.production` и пересоберите проект.
 
 ## Реализовано
