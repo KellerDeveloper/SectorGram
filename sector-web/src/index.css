@@ -1,22 +1,42 @@
 :root {
   --font-heading: "Unbounded", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --bg-primary: #0d0d0f;
-  --bg-card: #16161a;
-  --bg-input: #1a1a1e;
-  --bg-hover: rgba(255, 255, 255, 0.04);
-  --border: #2a2a2e;
-  --border-subtle: #222226;
-  --text-primary: #e4e4e7;
+
+  /* Liquid Glass — фон и глубина */
+  --bg-base: #0a0a0c;
+  --bg-gradient: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(239, 68, 68, 0.12), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 80% 50%, rgba(255, 255, 255, 0.03), transparent 40%);
+
+  /* Стекло: полупрозрачность + размытие */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-strong: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.12);
+  --glass-blur: 24px;
+  --glass-blur-strong: 40px;
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --text-primary: #f4f4f5;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
   --accent: #ef4444;
   --accent-alpha: rgba(239, 68, 68, 0.25);
   --danger: #f87171;
   --danger-bg: rgba(248, 113, 113, 0.12);
-  --radius: 8px;
-  --radius-lg: 12px;
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+/* Утилита для стеклянных панелей */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }
 
 *,
@@ -35,7 +55,8 @@ body {
   font-family: var(--font-mono);
   font-size: 16px;
   color: var(--text-primary);
-  background: var(--bg-primary);
+  background: var(--bg-base);
+  background-image: var(--bg-gradient);
   -webkit-font-smoothing: antialiased;
 }
 

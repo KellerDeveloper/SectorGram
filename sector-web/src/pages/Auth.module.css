@@ -3,18 +3,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
-  background: var(--bg-primary);
+  padding: 1.5rem;
+  background: var(--bg-base);
+  background-image: var(--bg-gradient);
 }
 
 .card {
   width: 100%;
   max-width: 22rem;
-  padding: 2rem;
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  padding: 2.25rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong));
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), 0 24px 48px rgba(0, 0, 0, 0.25);
 }
 
 .title {
@@ -38,21 +41,25 @@
 }
 
 .error {
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   background: var(--danger-bg);
   color: var(--danger);
   border-radius: var(--radius);
   font-size: 0.875rem;
+  border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
 .input {
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border);
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  background: var(--bg-input);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-primary);
   font-size: 1rem;
   font-family: var(--font-mono);
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .input::placeholder {
@@ -66,20 +73,22 @@
 }
 
 .button {
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1rem;
   background: var(--accent);
-  color: var(--bg-primary);
-  border: none;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius);
   font-size: 1rem;
   font-weight: 500;
   font-family: var(--font-heading);
   cursor: pointer;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
   transition: opacity 0.15s, transform 0.1s;
 }
 
 .button:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.95;
+  transform: translateY(-1px);
 }
 
 .button:active:not(:disabled) {
@@ -89,6 +98,7 @@
 .button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .footer {
@@ -101,8 +111,12 @@
 .footer a {
   color: var(--accent);
   text-decoration: none;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--radius);
+  transition: background 0.2s;
 }
 
 .footer a:hover {
-  text-decoration: underline;
+  background: var(--accent-alpha);
+  text-decoration: none;
 }
