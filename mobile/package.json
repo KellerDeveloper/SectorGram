@@ -5,7 +5,8 @@
   "scripts": {
     "start": "expo start --web",
     "web": "expo start --web",
-    "web:clear": "expo start --web --clear"
+    "web:clear": "expo start --web --clear",
+    "build:web": "expo export -p web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
