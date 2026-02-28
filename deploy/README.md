@@ -49,11 +49,7 @@ sudo cp deploy/nginx/sector.moscow.conf /etc/nginx/sites-available/sector.moscow
 
 Если папки `deploy/` на сервере ещё нет — закоммитьте и запушьте её с машины разработки, затем на сервере `git pull`.
 
-Измените `$frontend_root` в конфиге, если фронт лежит не в `/var/www/sector/sector-web/dist`:
-
-```nginx
-set $frontend_root /var/www/sector/sector-web/dist;
-```
+Если фронт лежит не в `/var/www/sector/sector-web/dist`, отредактируйте в конфиге директиву `root` в блоке `server` для sector.moscow (строка с `root /var/www/sector/sector-web/dist;`).
 
 Включите сайт и проверьте конфиг:
 
