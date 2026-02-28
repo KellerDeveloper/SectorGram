@@ -1,138 +1,32 @@
-# Быстрый старт - Инструкция по запуску
+# Быстрый старт — Backend
 
 ## Требования
 
-Перед запуском убедитесь, что у вас установлены:
-- **Node.js** версии 18 или выше ([скачать](https://nodejs.org/))
-- **npm** (обычно идет вместе с Node.js)
-- Для мобильной разработки: **Expo CLI** (установится автоматически) или приложение **Expo Go** на телефоне
+- **Node.js** 18+ ([скачать](https://nodejs.org/))
+- **npm** (идёт с Node.js)
+- **MongoDB** (локально или [Atlas](https://www.mongodb.com/cloud/atlas))
 
-Проверьте установку:
+Проверка:
 ```bash
-node --version  # должно быть v18+
-npm --version   # должно быть 9+
+node --version   # v18+
+npm --version    # 9+
 ```
 
-> ⚠️ **Если получили ошибку "npm: command not found"** - см. [INSTALL_NODE.md](./INSTALL_NODE.md) для инструкций по установке Node.js
+> ⚠️ **npm не найден** — см. [INSTALL_NODE.md](./INSTALL_NODE.md)
 
 ---
 
-## Шаг 1: Запуск Backend сервера
-
-Откройте **первый терминал** и выполните:
+## Запуск backend
 
 ```bash
-# Перейдите в папку backend
 cd backend
-
-# Установите зависимости (первый раз)
 npm install
-
-# Запустите сервер в режиме разработки
 npm run dev
 ```
 
-Вы должны увидеть:
-```
-Backend listening on http://localhost:4000
-```
+Сервер: `http://localhost:4000`
 
-✅ **Сервер работает!** Оставьте этот терминал открытым.
-
----
-
-## Шаг 2: Запуск Web‑клиента
-
-Откройте **второй терминал** (новое окно) и выполните:
-
-```bash
-# Перейдите в папку mobile
-cd mobile
-
-# Установите зависимости (первый раз)
-npm install
-
-# Запустите Expo
-npm start
-```
-
-После запуска вы увидите QR-код и меню Expo.
-
-### Варианты запуска:
-
-#### 🌐 **Web версия (самый простой способ для начала)**
-```bash
-npm run web
-```
-или нажмите `w` в терминале Expo.
-
-Откроется браузер на `http://localhost:19006` (или другой порт).
-
-**Если веб не обновляется** после изменений в коде:
-- Запустите с очисткой кэша: `npm run web:clear`
-- Или обновите страницу вручную: **Cmd+Shift+R** (Mac) / **Ctrl+Shift+R** (Windows) — жёсткое обновление без кэша
-
-#### 📱 **На реальном устройстве (iOS/Android)**
-1. Установите приложение **Expo Go** на телефон:
-   - [iOS App Store](https://apps.apple.com/app/expo-go/id982107779)
-   - [Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent)
-
-2. Отсканируйте QR-код из терминала Expo:
-   - **iOS**: откройте камеру и нажмите на уведомление
-   - **Android**: откройте Expo Go и нажмите "Scan QR Code"
-
-#### 💻 **На эмуляторе**
-- **iOS**: нажмите `i` в терминале Expo (требуется Xcode и симулятор)
-- **Android**: нажмите `a` в терминале Expo (требуется Android Studio и эмулятор)
-
----
-
-## Шаг 3: Настройка адреса backend для Web
-
-⚠️ **Важно**: Web‑клиент должен знать адрес backend‑сервера.
-
-### Проблема
-На телефоне `localhost` указывает на сам телефон, а не на ваш компьютер.
-
-### Решение
-
-1. **Узнайте IP-адрес вашего компьютера:**
-   - **macOS/Linux**: `ifconfig | grep "inet "` или `ipconfig getifaddr en0`
-   - **Windows**: `ipconfig` (ищите IPv4 адрес)
-
-2. **Задайте адрес сервера через переменную окружения:**
-   - В папке `mobile` скопируйте `.env.example` в `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Откройте `mobile/.env` и замените `192.168.1.XXX` на IP вашего компьютера:
-     ```
-     EXPO_PUBLIC_API_BASE_URL=http://192.168.1.100:4000
-     ```
-     (порт `4000` должен совпадать с портом backend)
-
-3. **Убедитесь, что телефон и компьютер в одной Wi‑Fi сети.**
-
-4. **Перезапустите Expo** (Ctrl+C и `npm start` снова), чтобы подхватить `.env`.
-
----
-
-## Проверка работы
-
-1. **Откройте приложение** (web или на устройстве)
-
-2. **Зарегистрируйтесь:**
-   - Нажмите "Нет аккаунта? Зарегистрироваться"
-   - Введите имя, email и пароль
-   - Нажмите "Зарегистрироваться"
-
-3. **Создайте чат:**
-   - Введите название чата
-   - Нажмите "Создать"
-
-4. **Откройте чат и отправьте сообщение**
-
-5. **Откройте второй браузер/устройство** и войдите другим пользователем - вы увидите сообщения в реальном времени!
+Перед первым запуском создайте `backend/.env` из `backend/.env.example` (MongoDB, JWT_SECRET, PORT, CORS).
 
 ---
 
@@ -140,80 +34,32 @@ npm run web
 
 ```
 sector/
-├── backend/              # Node.js сервер
+├── backend/           # Node.js API + Socket.io
 │   ├── src/
-│   │   └── server.js    # Основной файл сервера
+│   │   ├── server.js
+│   │   ├── app.js
+│   │   ├── routes/
+│   │   ├── controllers/
+│   │   ├── services/
+│   │   ├── models/
+│   │   ├── socket/
+│   │   └── config/
 │   └── package.json
-│
-├── mobile/              # React Native приложение
-│   ├── src/
-│   │   ├── screens/     # Экраны приложения
-│   │   ├── api/         # API клиент и Socket.io
-│   │   └── context/     # React контексты
-│   ├── App.js           # Главный файл приложения
-│   └── package.json
-│
-├── README.md            # Основная документация
-├── QUICKSTART.md        # Эта инструкция
-└── backend/SOCKET_EVENTS.md  # Документация по Socket.io
+├── README.md
+└── QUICKSTART.md
+```
+
+---
+
+## Тесты
+
+```bash
+cd backend
+npm test
 ```
 
 ---
 
 ## Остановка
 
-- **Backend**: Нажмите `Ctrl+C` в терминале backend
-- **Frontend**: Нажмите `Ctrl+C` в терминале Expo
-
----
-
-## Решение проблем
-
-### Порт 4000 занят
-Измените порт в `backend/src/server.js`:
-```javascript
-const PORT = process.env.PORT || 4001; // или другой порт
-```
-
-### Ошибка "Network request failed" или "Cannot connect to server"
-- На **реальном iPhone/Android** приложение не может достучаться до `localhost` — это адрес самого телефона.
-- **Сделайте:** создайте `mobile/.env` (см. `mobile/.env.example`), укажите `EXPO_PUBLIC_API_BASE_URL=http://IP_ВАШЕГО_МАК:4000`.
-- Узнать IP на Mac: `ipconfig getifaddr en0`.
-- Проверьте, что backend запущен и что телефон и компьютер в одной Wi‑Fi сети.
-
-### Ошибки при установке зависимостей
-```bash
-# Очистите кэш и переустановите
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Expo не запускается
-```bash
-# Установите Expo CLI глобально
-npm install -g expo-cli
-
-# Или используйте npx
-npx expo start
-```
-
----
-
-## Полезные команды
-
-### Backend
-```bash
-cd backend
-npm run dev      # Запуск с автоперезагрузкой
-npm start        # Обычный запуск
-```
-
-### Web‑client
-```bash
-cd mobile
-npm start        # Запуск web‑версии (Expo для web)
-```
-
----
-
-Готово! Теперь у вас работает полноценный realtime мессенджер! 🚀
+В терминале backend: **Ctrl+C**.

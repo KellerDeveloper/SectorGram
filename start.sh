@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Скрипт для запуска проекта
-# Использование: ./start.sh [backend|mobile|all]
+# Скрипт для запуска backend
+# Использование: ./start.sh или ./start.sh backend
 
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -9,7 +9,6 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Проверка наличия npm
 check_npm() {
   if ! command -v npm &> /dev/null; then
     echo -e "${RED}❌ Ошибка: npm не найден!${NC}"
@@ -26,38 +25,18 @@ check_npm() {
 }
 
 case "$1" in
-  backend)
+  backend|"")
     check_npm
     echo -e "${BLUE}Запуск backend сервера...${NC}"
-    cd backend || exit 1
+    cd "$(dirname "$0")/backend" || exit 1
     if [ ! -d "node_modules" ]; then
       echo -e "${YELLOW}Установка зависимостей backend...${NC}"
       npm install
     fi
     npm run dev
     ;;
-  mobile)
-    check_npm
-    echo -e "${BLUE}Запуск mobile приложения...${NC}"
-    cd mobile || exit 1
-    if [ ! -d "node_modules" ]; then
-      echo -e "${YELLOW}Установка зависимостей mobile...${NC}"
-      npm install
-    fi
-    npm start
-    ;;
-  all|"")
-    echo -e "${GREEN}Запуск всего проекта...${NC}"
-    echo -e "${YELLOW}Откройте два терминала:${NC}"
-    echo -e "  1. Запустите: ${BLUE}./start.sh backend${NC}"
-    echo -e "  2. Запустите: ${BLUE}./start.sh mobile${NC}"
-    echo ""
-    echo -e "Или запустите вручную:"
-    echo -e "  ${BLUE}cd backend && npm install && npm run dev${NC}"
-    echo -e "  ${BLUE}cd mobile && npm install && npm start${NC}"
-    ;;
   *)
-    echo "Использование: ./start.sh [backend|mobile|all]"
+    echo "Использование: ./start.sh [backend]"
     exit 1
     ;;
 esac
