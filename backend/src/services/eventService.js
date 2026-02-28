@@ -10,6 +10,7 @@ export async function createEvent({
   endsAt,
   place,
   coverImage,
+  location,
 }) {
   const creatorObjId = new mongoose.Types.ObjectId(creatorId);
 
@@ -30,6 +31,22 @@ export async function createEvent({
     creatorId: creatorObjId,
     participants: [creatorObjId],
     chatId: chat._id,
+    location:
+      location &&
+      typeof location === "object" &&
+      (typeof location.latitude === "number" ||
+        typeof location.longitude === "number")
+        ? {
+            latitude:
+              typeof location.latitude === "number"
+                ? location.latitude
+                : undefined,
+            longitude:
+              typeof location.longitude === "number"
+                ? location.longitude
+                : undefined,
+          }
+        : undefined,
   });
 
   await event.save();
@@ -142,6 +159,12 @@ function mapEvent(eventDoc) {
     endsAt: event.endsAt,
     place: event.place,
     coverImage: event.coverImage,
+    location: event.location
+      ? {
+          latitude: event.location.latitude,
+          longitude: event.location.longitude,
+        }
+      : null,
     status: event.status,
     creatorId: event.creatorId?._id?.toString?.() || event.creatorId?.toString(),
     creator: event.creatorId && event.creatorId.name

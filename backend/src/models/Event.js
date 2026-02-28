@@ -29,6 +29,14 @@ const eventSchema = new mongoose.Schema(
     coverImage: {
       type: String,
     },
+    location: {
+      latitude: {
+        type: Number,
+      },
+      longitude: {
+        type: Number,
+      },
+    },
     creatorId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

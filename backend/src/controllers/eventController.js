@@ -9,8 +9,15 @@ import {
 export async function create(req, res, next) {
   try {
     const creatorId = req.user.id;
-    const { title, description, startsAt, endsAt, place, coverImage } =
-      req.body || {};
+    const {
+      title,
+      description,
+      startsAt,
+      endsAt,
+      place,
+      coverImage,
+      location,
+    } = req.body || {};
 
     const event = await createEvent({
       creatorId,
@@ -20,6 +27,7 @@ export async function create(req, res, next) {
       endsAt,
       place,
       coverImage,
+      location,
     });
 
     res.status(201).json(event);

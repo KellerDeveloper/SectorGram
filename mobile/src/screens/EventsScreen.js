@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Platform,
   ScrollView,
+  Linking,
 } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { useTheme } from "../theme/ThemeContext";
@@ -42,6 +43,8 @@ export default function EventsScreen({ navigation }) {
   const [endsAt, setEndsAt] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -262,12 +265,25 @@ export default function EventsScreen({ navigation }) {
         endsAt: endsAt.trim() || undefined,
         description: description.trim() || undefined,
         coverImage: coverImage.trim() || undefined,
+        location:
+          latitude.trim() || longitude.trim()
+            ? {
+                latitude: latitude.trim()
+                  ? Number.parseFloat(latitude.trim())
+                  : undefined,
+                longitude: longitude.trim()
+                  ? Number.parseFloat(longitude.trim())
+                  : undefined,
+              }
+            : undefined,
       });
       setTitle("");
       setPlace("");
       setDescription("");
       setEndsAt("");
       setCoverImage("");
+      setLatitude("");
+      setLongitude("");
       setCreating(false);
     } catch (e) {
       setSubmitError(e.message || "Не удалось создать мероприятие");
@@ -288,6 +304,28 @@ export default function EventsScreen({ navigation }) {
 
     const canJoin = !isParticipant;
     const canLeave = isParticipant && !isCreator;
+
+    const openInYandexMaps = () => {
+      if (item.location && (item.location.latitude || item.location.longitude)) {
+        const lat = item.location.latitude;
+        const lon = item.location.longitude;
+        if (typeof lat === "number" && typeof lon === "number") {
+          const url = `https://yandex.ru/maps/?ll=${encodeURIComponent(
+            String(lon)
+          )}%2C${encodeURIComponent(String(lat))}&z=16&pt=${encodeURIComponent(
+            String(lon)
+          )},${encodeURIComponent(String(lat))},pm2rdl`;
+          Linking.openURL(url).catch(() => {});
+          return;
+        }
+      }
+      if (item.place) {
+        const url = `https://yandex.ru/maps/?text=${encodeURIComponent(
+          item.place
+        )}`;
+        Linking.openURL(url).catch(() => {});
+      }
+    };
 
     return (
       <View style={styles.eventCard}>
@@ -336,6 +374,13 @@ export default function EventsScreen({ navigation }) {
               <Text style={styles.secondaryButtonText}>Открыть чат</Text>
             </TouchableOpacity>
           )}
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={openInYandexMaps}
+          >
+            <Text style={styles.secondaryButtonText}>Открыть в Яндекс.Картах</Text>
+          </TouchableOpacity>
 
           {canJoin && (
             <TouchableOpacity
@@ -416,6 +461,20 @@ export default function EventsScreen({ navigation }) {
                 placeholder="Ссылка на обложку (опционально)"
                 value={coverImage}
                 onChangeText={setCoverImage}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Широта (опционально, для Яндекс.Карт)"
+                value={latitude}
+                onChangeText={setLatitude}
+                keyboardType="numeric"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Долгота (опционально, для Яндекс.Карт)"
+                value={longitude}
+                onChangeText={setLongitude}
+                keyboardType="numeric"
               />
               {submitError && (
                 <Text style={styles.errorText}>{submitError}</Text>
