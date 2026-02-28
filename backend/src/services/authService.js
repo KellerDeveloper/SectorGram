@@ -24,7 +24,8 @@ export async function registerUser({ email, password, name }) {
     throw error;
   }
 
-  const existing = await User.findOne({ email });
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const existing = await User.findOne({ email: normalizedEmail });
   if (existing) {
     const error = new Error("Пользователь с таким email уже существует");
     error.status = 409;
@@ -32,7 +33,7 @@ export async function registerUser({ email, password, name }) {
   }
 
   const passwordHash = bcrypt.hashSync(password, 10);
-  const user = new User({ email, name, passwordHash });
+  const user = new User({ email: normalizedEmail, name, passwordHash });
   await user.save();
 
   const token = generateToken(user);
@@ -50,7 +51,8 @@ export async function loginUser({ email, password }) {
     throw error;
   }
 
-  const user = await User.findOne({ email });
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     const error = new Error("Неверный email или пароль");
     error.status = 401;
