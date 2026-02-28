@@ -1,0 +1,6 @@
+module Pods_SectorGram {
+  umbrella header "Pods-SectorGram-umbrella.h"
+
+  export *
+  module * { export * }
+}

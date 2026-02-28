@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "SectorGram",
+    "slug": "sectorgram",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FFEBEE"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Доступ к камере для видеосообщений",
+          "microphonePermission": "Доступ к микрофону для записи видео",
+          "recordAudioAndroid": true
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Приложению нужен доступ к фотографиям для установки аватара",
+        "NSCameraUsageDescription": "Приложению нужен доступ к камере для съемки фото аватара",
+        "NSMicrophoneUsageDescription": "Микрофон нужен для записи видеосообщений"
+      },
+      "bundleIdentifier": "com.anonymous.sectorgram"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E53935"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    }
+  }
+}
