@@ -21,7 +21,23 @@ export const loginValidation = [
 ];
 
 export const googleAuthValidation = [
-  body("idToken").isString().notEmpty().withMessage("idToken от Google обязателен"),
+  body("id_token")
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage("id_token должен быть непустой строкой"),
+  body("idToken")
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage("idToken должен быть непустой строкой"),
+  body().custom((value, { req }) => {
+    const token = req.body?.id_token || req.body?.idToken;
+    if (!token) {
+      throw new Error("В теле запроса нужен id_token или idToken (JWT от Google)");
+    }
+    return true;
+  }),
   handleValidationErrors,
 ];
 

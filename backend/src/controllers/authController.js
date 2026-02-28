@@ -24,7 +24,7 @@ export async function login(req, res, next) {
 
 export async function googleAuth(req, res, next) {
   try {
-    const { idToken } = req.body || {};
+    const idToken = (req.body?.id_token ?? req.body?.idToken) || "";
     const result = await loginOrRegisterWithGoogle(idToken);
     res.json(result);
   } catch (error) {
