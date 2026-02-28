@@ -1,4 +1,4 @@
-import { registerUser, loginUser } from "../services/authService.js";
+import { registerUser, loginUser, loginOrRegisterWithGoogle } from "../services/authService.js";
 
 export async function register(req, res, next) {
   try {
@@ -18,6 +18,17 @@ export async function login(req, res, next) {
     res.json(result);
   } catch (error) {
     console.error("Ошибка входа:", error);
+    next(error);
+  }
+}
+
+export async function googleAuth(req, res, next) {
+  try {
+    const { idToken } = req.body || {};
+    const result = await loginOrRegisterWithGoogle(idToken);
+    res.json(result);
+  } catch (error) {
+    console.error("Ошибка входа через Google:", error);
     next(error);
   }
 }

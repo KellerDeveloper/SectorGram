@@ -20,3 +20,8 @@ export const loginValidation = [
   handleValidationErrors,
 ];
 
+export const googleAuthValidation = [
+  body("idToken").isString().notEmpty().withMessage("idToken от Google обязателен"),
+  handleValidationErrors,
+];
+

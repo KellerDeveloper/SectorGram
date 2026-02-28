@@ -30,9 +30,14 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
     passwordHash: {
       type: String,
-      required: true,
+      default: null,
     },
     expoPushToken: {
       type: String,
