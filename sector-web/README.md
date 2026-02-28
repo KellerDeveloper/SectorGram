@@ -19,13 +19,18 @@ npm run dev
 
 В режиме разработки запросы к API и Socket.io проксируются на `http://localhost:4000`. Убедитесь, что в `backend/.env` в `CORS_ORIGIN` указан `http://localhost:5173` (или добавьте его через запятую).
 
-## Сборка
+## Сборка и деплой на sector.moscow
 
 ```bash
 npm run build
 ```
 
-Статика будет в папке `dist/`. Для раздачи через свой сервер или CDN задайте переменную окружения `VITE_API_URL` (URL бэкенда), чтобы запросы и сокет шли на нужный хост.
+Статика будет в папке `dist/`. Для работы на домене **sector.moscow** уже настроен файл `.env.production`: API и Socket.io идут на **https://api.sector.moscow**. Бэкенд должен быть доступен по этому адресу (в `backend` CORS уже разрешает sector.moscow).
+
+- Фронт раздаётся с **https://sector.moscow** (или www).
+- Бэкенд — **https://api.sector.moscow** (тот же сервер или отдельный).
+
+Если API отдаётся с того же домена по пути `/api`, уберите или обнулите `VITE_API_URL` в `.env.production` и пересоберите проект.
 
 ## Реализовано
 

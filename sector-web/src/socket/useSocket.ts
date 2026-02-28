@@ -3,7 +3,11 @@ import { io, Socket } from "socket.io-client";
 import { getToken } from "../api/client";
 
 const SOCKET_PATH = "/socket.io";
-const SOCKET_URL = import.meta.env.VITE_API_URL || "";
+// Тот же хост, что и для API: продакшен на sector.moscow — https://api.sector.moscow
+const SOCKET_URL =
+  import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ""
+    ? import.meta.env.VITE_API_URL
+    : "";
 
 export function useSocket() {
   const [socket, setSocket] = useState<Socket | null>(null);
