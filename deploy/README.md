@@ -61,6 +61,17 @@ sudo nginx -t
 
 Если `nginx -t` пишет «No such file or directory» для `sites-enabled/sector.moscow.conf` — значит в `sites-available` нет файла (cp выполнялся не из корня репо или deploy/ не залит на сервер). Проверьте: `ls -la /etc/nginx/sites-available/sector.moscow.conf`.
 
+**Если видите «conflicting server name»** — эти же домены объявлены ещё в одном конфиге. Оставьте только один. На сервере:
+```bash
+ls -la /etc/nginx/sites-enabled/
+```
+Удалите симлинк на старый конфиг (например `default` или конфиг, который правил certbot), чтобы для sector.moscow, www и api использовался только `sector.moscow.conf`:
+```bash
+sudo rm /etc/nginx/sites-enabled/default
+# или другой файл, где были прописаны эти домены
+sudo nginx -t && sudo systemctl reload nginx
+```
+
 ### SSL (Let's Encrypt)
 
 Сначала убедитесь, что DNS для `sector.moscow`, `www.sector.moscow` и `api.sector.moscow` указывает на сервер. Затем:
@@ -106,3 +117,22 @@ cd backend && npm ci && pm2 restart sector-backend
 | api.sector.moscow | Прокси на `http://127.0.0.1:4000` (API + Socket.io) |
 
 CORS в бэкенде уже разрешает `https://sector.moscow` и `https://www.sector.moscow`.
+
+## Проверка после деплоя
+
+Если фронт показывает «Failed to fetch» при логине/регистрации, проверьте **на сервере**:
+
+```bash
+# Бэкенд отвечает на localhost?
+curl -s http://127.0.0.1:4000/health
+# Ожидается: {"ok":true,"mongodb":"connected"} и HTTP 200
+
+# Nginx проксирует api.sector.moscow на бэкенд?
+curl -s -o /dev/null -w "%{http_code}" https://api.sector.moscow/health
+# Ожидается: 200
+
+# Включён только один конфиг для этих доменов (нет conflicting server name)
+ls -la /etc/nginx/sites-enabled/
+```
+
+Если первый `curl` не даёт 200 — запустите бэкенд: `cd /var/www/sector/backend && pm2 start ecosystem.config.cjs` (или `pm2 restart sector-backend`). Если второй не 200 — проверьте, что в `sites-enabled` только `sector.moscow.conf` и перезагрузите nginx. С вашего компьютера: `curl -v https://api.sector.moscow/health` — покажет, доступен ли API снаружи.
