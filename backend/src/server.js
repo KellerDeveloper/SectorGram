@@ -1,4 +1,6 @@
 import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 import { Server as SocketIOServer } from "socket.io";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
@@ -11,7 +13,9 @@ import User from "./models/User.js";
 import Chat from "./models/Chat.js";
 import Message from "./models/Message.js";
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Загружаем .env из backend/, даже если процесс запущен из корня проекта
+dotenv.config({ path: path.resolve(__dirname, "..", ".env") });
 
 const { PORT = 4000, JWT_SECRET } = process.env;
 
@@ -1220,8 +1224,21 @@ io.on("connection", async (socket) => {
 app.use(errorHandler);
 
 // Подключение к БД и запуск сервера
-connectDatabase().then(() => {
-  server.listen(PORT, () => {
-    console.log(`Backend listening on http://localhost:${PORT}`);
+connectDatabase()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Backend listening on http://localhost:${PORT}`);
+    });
+    server.on("error", (err) => {
+      if (err.code === "EADDRINUSE") {
+        console.error(`Порт ${PORT} занят. Смените PORT в .env или остановите другой процесс.`);
+      } else {
+        console.error("Ошибка HTTP-сервера:", err);
+      }
+      process.exit(1);
+    });
+  })
+  .catch((err) => {
+    console.error("Не удалось запустить сервер:", err);
+    process.exit(1);
   });
-});
