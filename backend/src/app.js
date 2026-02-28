@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
@@ -21,6 +22,16 @@ export function createApp() {
 
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+  // Проверка живости (без авторизации) — для отладки 502 и мониторинга
+  app.get("/health", (req, res) => {
+    const dbState = mongoose.connection.readyState;
+    const ok = dbState === 1; // 1 = connected
+    res.status(ok ? 200 : 503).json({
+      ok,
+      mongodb: dbState === 1 ? "connected" : "disconnected",
+    });
+  });
 
   // Статика для загруженных файлов (видеокружки и др. медиа)
   app.use(
