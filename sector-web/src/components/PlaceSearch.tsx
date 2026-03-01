@@ -7,26 +7,6 @@ export type PlaceSearchResult = {
   placeName: string;
 };
 
-declare global {
-  interface Window {
-    ymaps?: {
-      ready: (cb: () => void) => void;
-      geocode: (
-        query: string | number[],
-        options?: object
-      ) => Promise<{
-        geoObjects: {
-          get: (index: number) => {
-            geometry: { getCoordinates: () => number[] };
-            properties: { get: (key: string) => string };
-          };
-          getLength: () => number;
-        };
-      }>;
-    };
-  }
-}
-
 type Props = {
   /** Уже загружен ли API (например, карта на странице загрузила скрипт) */
   ymapsReady: boolean;

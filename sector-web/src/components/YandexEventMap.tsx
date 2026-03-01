@@ -7,20 +7,6 @@ type YandexMapInstance = {
   destroy: () => void;
 };
 
-declare global {
-  interface Window {
-    ymaps?: {
-      ready: (cb: () => void) => void;
-      Map: new (
-        element: string | HTMLElement,
-        state: { center: number[]; zoom: number },
-        options?: object
-      ) => YandexMapInstance;
-      Placemark: new (coords: number[], properties?: object, options?: object) => unknown;
-    };
-  }
-}
-
 type Props = {
   apiKey: string;
   center: [number, number];

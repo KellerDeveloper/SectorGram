@@ -116,18 +116,22 @@ export function EventDetail() {
                   <button
                     type="button"
                     className={styles.mapButton}
-                    onClick={() =>
-                      openYandexMapsRoute(event.location!.latitude, event.location!.longitude)
-                    }
+                    onClick={() => {
+                      const lat = event.location!.latitude!;
+                      const lon = event.location!.longitude!;
+                      openYandexMapsRoute(lat, lon);
+                    }}
                   >
                     Построить маршрут
                   </button>
                   <button
                     type="button"
                     className={styles.mapButton}
-                    onClick={() =>
-                      openYandexMapsPoint(event.location!.latitude, event.location!.longitude)
-                    }
+                    onClick={() => {
+                      const lat = event.location!.latitude!;
+                      const lon = event.location!.longitude!;
+                      openYandexMapsPoint(lat, lon);
+                    }}
                   >
                     Открыть в Яндекс Картах
                   </button>
