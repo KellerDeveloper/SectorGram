@@ -154,3 +154,13 @@ ls -la /etc/nginx/sites-enabled/
 Если первый `curl` не даёт 200 — запустите бэкенд: `cd /var/www/sector/backend && pm2 start ecosystem.config.cjs` (или `pm2 restart sector-backend`). Если второй не 200 — проверьте, что в `sites-enabled` только `sector.moscow.conf` и перезагрузите nginx.
 
 **С вашего компьютера:** откройте в браузере `https://api.sector.moscow/health` — должна открыться JSON-строка `{"ok":true,"mongodb":"connected"}`. Если страница не открывается или предупреждение о сертификате — проблема в сети или SSL для api.sector.moscow. После любых правок CORS или nginx перезапустите бэкенд и выполните `sudo nginx -t && sudo systemctl reload nginx`.
+
+### WebSocket (Socket.IO) не подключается
+
+Если в консоли браузера ошибки вида «WebSocket connection to 'wss://sector.moscow/socket.io/...' failed»:
+
+1. **Прокси на том же домене:** в конфиге nginx для `sector.moscow` должен быть блок `location /socket.io/` с проксированием на `http://127.0.0.1:4000` и заголовками `Upgrade`/`Connection` (в `deploy/nginx/sector.moscow.conf` он уже есть). После правок: `sudo nginx -t && sudo systemctl reload nginx`.
+
+2. **Сборка с правильным API:** при сборке фронта должен подхватываться `VITE_API_URL` из `.env.production` (например `https://api.sector.moscow`). Тогда сокет будет подключаться к `api.sector.moscow`. Если переменная не задана, клиент использует текущий хост (`sector.moscow`), поэтому важен пункт 1.
+
+3. Убедитесь, что бэкенд запущен (`pm2 list`, при необходимости `pm2 restart sector-backend`).

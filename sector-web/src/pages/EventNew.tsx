@@ -43,7 +43,7 @@ export function EventNew() {
     e.preventDefault();
     setError("");
     if (!title.trim() || !place.trim() || !startsAt) {
-      setError("Заполните название, место и дату начала");
+      setError("Заполните название, адрес и дату начала");
       return;
     }
     setSaving(true);
@@ -88,32 +88,6 @@ export function EventNew() {
               required
             />
           </div>
-          <div className={styles.field}>
-            <label className={styles.label}>Место *</label>
-            <input
-              type="text"
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-              className={styles.input}
-              required
-            />
-            <div className={styles.placeSearch}>
-              {yandexApiKey ? (
-                <PlaceSearch
-                  ymapsReady={ymapsReady}
-                  placeholder="Адрес или название места"
-                  onSelect={(r) => {
-                    setPlace(r.placeName);
-                    setLocation({ latitude: r.latitude, longitude: r.longitude });
-                  }}
-                />
-              ) : (
-                <p className={styles.mapHint}>
-                  Для поиска по адресу задайте <code>VITE_YANDEX_MAP_API_KEY</code> в .env
-                </p>
-              )}
-            </div>
-          </div>
           <div className={styles.fieldMap}>
             <label className={styles.label}>Точка на карте</label>
             <p className={styles.hint}>Клик по карте — отметить место проведения</p>
@@ -150,6 +124,27 @@ export function EventNew() {
                 ).
               </div>
             )}
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Адрес *</label>
+            <div className={styles.placeSearch}>
+              {yandexApiKey ? (
+                <PlaceSearch
+                  ymapsReady={ymapsReady}
+                  value={place}
+                  onChange={setPlace}
+                  placeholder="Введите адрес и нажмите «Найти»"
+                  onSelect={(r) => {
+                    setPlace(r.placeName);
+                    setLocation({ latitude: r.latitude, longitude: r.longitude });
+                  }}
+                />
+              ) : (
+                <p className={styles.mapHint}>
+                  Для поиска по адресу задайте <code>VITE_YANDEX_MAP_API_KEY</code> в .env
+                </p>
+              )}
+            </div>
           </div>
           <div className={styles.field}>
             <label className={styles.label}>Начало *</label>

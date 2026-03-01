@@ -14,6 +14,9 @@ type Props = {
   onSelect: (result: PlaceSearchResult) => void;
   placeholder?: string;
   className?: string;
+  /** Управляемое значение (адрес) */
+  value?: string;
+  onChange?: (value: string) => void;
 };
 
 export function PlaceSearch({
@@ -21,8 +24,18 @@ export function PlaceSearch({
   onSelect,
   placeholder = "Адрес или название места",
   className,
+  value,
+  onChange,
 }: Props) {
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState("");
+  const query = value !== undefined ? value : internalQuery;
+  const setQuery = useCallback(
+    (v: string) => {
+      if (onChange) onChange(v);
+      else setInternalQuery(v);
+    },
+    [onChange]
+  );
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<PlaceSearchResult[]>([]);
   const [error, setError] = useState("");
