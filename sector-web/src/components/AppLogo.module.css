@@ -4,15 +4,18 @@
   gap: 0.5rem;
   text-decoration: none;
   margin: 0;
+  background: transparent;
 }
 
+/* Как на авторизации: пропорции 809×254, без рамки */
 .img {
   height: 2.75rem;
   width: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
   vertical-align: middle;
-  object-fit: contain;
+  object-fit: cover;
+  background: transparent;
 }
 
 .text {
