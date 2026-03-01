@@ -131,6 +131,7 @@ export function EventNew() {
               {yandexApiKey ? (
                 <PlaceSearch
                   ymapsReady={ymapsReady}
+                  apiKey={yandexApiKey}
                   value={place}
                   onChange={setPlace}
                   placeholder="Введите адрес или название заведения и нажмите «Найти»"
