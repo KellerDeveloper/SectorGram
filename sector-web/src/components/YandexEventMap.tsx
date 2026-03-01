@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+type YandexMapInstance = {
+  geoObjects: { add: (obj: unknown) => void; remove: (obj: unknown) => void };
+  events: { add: (type: string, handler: (e: { get: (key: string) => number[] }) => void) => void };
+  setCenter: (center: number[]) => void;
+  destroy: () => void;
+};
+
 declare global {
   interface Window {
     ymaps?: {
@@ -8,12 +15,7 @@ declare global {
         element: string | HTMLElement,
         state: { center: number[]; zoom: number },
         options?: object
-      ) => {
-        geoObjects: { add: (obj: unknown) => void; remove: (obj: unknown) => void };
-        events: { add: (type: string, handler: (e: { get: (key: string) => number[] }) => void) => void };
-        setCenter: (center: number[]) => void;
-        destroy: () => void;
-      };
+      ) => YandexMapInstance;
       Placemark: new (coords: number[], properties?: object, options?: object) => unknown;
     };
   }
@@ -31,7 +33,7 @@ type Props = {
 
 export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect, className }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<ReturnType<Window["ymaps"]["Map"]> | null>(null);
+  const mapRef = useRef<YandexMapInstance | null>(null);
   const placemarkRef = useRef<unknown>(null);
   const [ready, setReady] = useState(!!window.ymaps);
   const [error, setError] = useState("");
@@ -74,17 +76,20 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
   const initMap = useCallback(() => {
     if (!containerRef.current || !window.ymaps || mapRef.current) return;
     const initialCenter = centerRef.current;
-    window.ymaps.ready(() => {
+    const ymaps = window.ymaps;
+    if (!ymaps) return;
+    ymaps.ready(() => {
       if (!containerRef.current || !window.ymaps) return;
+      const y = window.ymaps;
       try {
-        const map = new window.ymaps.Map(
+        const map = new y.Map(
           containerRef.current,
           { center: initialCenter, zoom },
           { suppressMapOpenBlock: true }
         );
         mapRef.current = map;
         if (mode === "view") {
-          const placemark = new window.ymaps.Placemark(
+          const placemark = new y.Placemark(
             initialCenter,
             {},
             { preset: "islands#redIcon" }
@@ -95,12 +100,13 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
         if (mode === "pick" && onPointSelect) {
           map.events.add("click", (e: { get: (key: string) => number[] }) => {
             const coords = e.get("coords");
-            if (coords && coords.length >= 2) {
+            const ymapsApi = window.ymaps;
+            if (coords && coords.length >= 2 && ymapsApi) {
               onPointSelect(coords[0], coords[1]);
               if (placemarkRef.current) {
                 map.geoObjects.remove(placemarkRef.current as never);
               }
-              const placemark = new window.ymaps.Placemark(
+              const placemark = new ymapsApi.Placemark(
                 coords,
                 {},
                 { preset: "islands#redIcon" }
@@ -129,11 +135,12 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
   }, [ready, initMap]);
 
   useEffect(() => {
-    if (!mapRef.current || !window.ymaps) return;
+    const y = window.ymaps;
+    if (!mapRef.current || !y) return;
     mapRef.current.setCenter(center);
     if (mode === "view") {
       if (placemarkRef.current) mapRef.current.geoObjects.remove(placemarkRef.current as never);
-      const placemark = new window.ymaps.Placemark(center, {}, { preset: "islands#redIcon" });
+      const placemark = new y.Placemark(center, {}, { preset: "islands#redIcon" });
       placemarkRef.current = placemark;
       mapRef.current.geoObjects.add(placemark);
     }
