@@ -116,7 +116,7 @@ cd backend && npm ci && pm2 restart sector-backend
 | sector.moscow, www.sector.moscow | Статика из `sector-web/dist` (SPA) |
 | api.sector.moscow | Прокси на `http://127.0.0.1:4000` (API + Socket.io) |
 
-CORS в бэкенде разрешает `https://sector.moscow` и `https://www.sector.moscow`; для preflight явно заданы методы и заголовки (`Content-Type`, `Authorization`).
+CORS в бэкенде разрешает `http` и `https` для `sector.moscow` и `www.sector.moscow`; для preflight (OPTIONS) явно заданы методы и заголовки (`Content-Type`, `Authorization`).
 
 ## Проверка после деплоя
 
@@ -130,6 +130,10 @@ curl -s http://127.0.0.1:4000/health
 # Nginx проксирует api.sector.moscow на бэкенд?
 curl -s -o /dev/null -w "%{http_code}" https://api.sector.moscow/health
 # Ожидается: 200
+
+# Preflight CORS (OPTIONS) отвечает 204 и с заголовками CORS?
+curl -s -X OPTIONS -D - -o /dev/null "https://api.sector.moscow/auth/login" -H "Origin: https://sector.moscow" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type"
+# Ожидается: HTTP/2 204 и в заголовках ответа Access-Control-Allow-Origin: https://sector.moscow
 
 # Включён только один конфиг для этих доменов (нет conflicting server name)
 ls -la /etc/nginx/sites-enabled/

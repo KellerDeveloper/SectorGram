@@ -2,6 +2,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:19006",
   "http://localhost:8081",
+  "http://sector.moscow",
+  "http://www.sector.moscow",
   "https://sector.moscow",
   "https://www.sector.moscow",
   "https://api.sector.moscow",
@@ -44,6 +46,11 @@ export function getHttpCorsOptions(rawOrigins = process.env.CORS_ORIGIN) {
           callback(new Error(`CORS blocked for origin: ${origin}`));
         },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Content-Length", "Content-Type"],
+    optionsSuccessStatus: 204,
+    preflightContinue: false,
   };
 }
 
