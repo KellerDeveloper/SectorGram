@@ -23,6 +23,11 @@ export function createApp() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
+  // Явный ответ на CORS preflight (OPTIONS), чтобы запросы с браузера не падали
+  app.options("*", (req, res) => {
+    res.sendStatus(204);
+  });
+
   // Проверка живости (без авторизации) — для отладки 502 и мониторинга
   app.get("/health", (req, res) => {
     const dbState = mongoose.connection.readyState;

@@ -131,9 +131,13 @@ curl -s http://127.0.0.1:4000/health
 curl -s -o /dev/null -w "%{http_code}" https://api.sector.moscow/health
 # Ожидается: 200
 
-# Preflight CORS (OPTIONS) отвечает 204 и с заголовками CORS?
-curl -s -X OPTIONS -D - -o /dev/null "https://api.sector.moscow/auth/login" -H "Origin: https://sector.moscow" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: content-type"
-# Ожидается: HTTP/2 204 и в заголовках ответа Access-Control-Allow-Origin: https://sector.moscow
+# Preflight CORS (OPTIONS) отвечает 204?
+# Если вывод пустой — проверьте с -v (verbose) и убедитесь, что бэкенд запущен.
+curl -s -i -X OPTIONS --http1.1 "https://api.sector.moscow/auth/login" \
+  -H "Origin: https://sector.moscow" \
+  -H "Access-Control-Request-Method: POST" \
+  -H "Access-Control-Request-Headers: content-type"
+# Ожидается первая строка: HTTP/1.1 204 No Content и заголовок Access-Control-Allow-Origin.
 
 # Включён только один конфиг для этих доменов (нет conflicting server name)
 ls -la /etc/nginx/sites-enabled/
