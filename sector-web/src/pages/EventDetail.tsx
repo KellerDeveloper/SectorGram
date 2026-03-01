@@ -102,7 +102,7 @@ export function EventDetail() {
           {event.location?.latitude != null &&
             event.location?.longitude != null && (
               <div className={styles.mapBlock}>
-                {import.meta.env.VITE_YANDEX_MAP_API_KEY ? (
+                {import.meta.env.VITE_YANDEX_MAP_API_KEY && (
                   <div className={styles.mapWrap}>
                     <YandexEventMap
                       apiKey={import.meta.env.VITE_YANDEX_MAP_API_KEY}
