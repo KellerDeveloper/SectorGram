@@ -15,7 +15,7 @@ export function Stories() {
     let cancelled = false;
     getStories()
       .then((list) => {
-        if (!cancelled) setFeed(list);
+        if (!cancelled) setFeed(Array.isArray(list) ? list : []);
       })
       .catch((err: Error) => {
         if (!cancelled) setError(err.message);
@@ -69,7 +69,7 @@ export function Stories() {
                 <span className={styles.userName}>Мои истории</span>
               </Link>
             )}
-            {feed
+            {(Array.isArray(feed) ? feed : [])
               .filter((e) => e.userId !== user?.id)
               .map((entry) => (
                 <Link

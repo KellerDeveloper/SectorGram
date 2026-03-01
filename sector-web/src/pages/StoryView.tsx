@@ -32,7 +32,7 @@ export function StoryView() {
     };
   }, [userId]);
 
-  const stories = data?.stories ?? [];
+  const stories = Array.isArray(data?.stories) ? data.stories : [];
   const current = stories[index];
   const isOwner = data?.userId === user?.id;
 
@@ -123,7 +123,7 @@ export function StoryView() {
         <button type="button" className={styles.sideBtn} onClick={goNext} aria-label="Далее" style={{ right: 0 }} />
       </div>
       <div className={styles.progress}>
-        {stories.map((_, i) => (
+        {(Array.isArray(stories) ? stories : []).map((_, i) => (
           <div
             key={i}
             className={i === index ? styles.progressActive : styles.progressDot}

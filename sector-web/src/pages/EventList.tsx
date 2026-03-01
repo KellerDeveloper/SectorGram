@@ -15,7 +15,7 @@ export function EventList() {
     let cancelled = false;
     getEvents()
       .then((list) => {
-        if (!cancelled) setEvents(list);
+        if (!cancelled) setEvents(Array.isArray(list) ? list : []);
       })
       .catch((err: Error) => {
         if (!cancelled) setError(err.message);
@@ -55,11 +55,11 @@ export function EventList() {
         {error && <div className={styles.error}>{error}</div>}
         {loading ? (
           <div className={styles.loading}>Загрузка…</div>
-        ) : events.length === 0 ? (
+        ) : (Array.isArray(events) ? events : []).length === 0 ? (
           <p className={styles.empty}>Нет предстоящих событий.</p>
         ) : (
           <ul className={styles.list}>
-            {events.map((ev) => (
+            {(Array.isArray(events) ? events : []).map((ev) => (
               <li key={ev.id}>
                 <Link to={`/events/${ev.id}`} className={styles.card}>
                   <div className={styles.cardHeader}>

@@ -33,7 +33,7 @@ export function ChatRoom() {
   /** Порядок id сообщений-видеокружков для автозапуска следующего */
   const videoNoteIds = React.useMemo(
     () =>
-      messages
+      (Array.isArray(messages) ? messages : [])
         .filter((m) => m.media?.type === "videoNote" && m.media?.url)
         .map((m) => m.id),
     [messages]
@@ -84,7 +84,7 @@ export function ChatRoom() {
     setLoading(true);
     getMessages(chatId)
       .then((list) => {
-        if (!cancelled) setMessages(list);
+        if (!cancelled) setMessages(Array.isArray(list) ? list : []);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -100,7 +100,7 @@ export function ChatRoom() {
     getChatOnline(chatId)
       .then((data) => {
         if (!cancelled) {
-          setOnlineMembers(data.onlineMembers ?? []);
+          setOnlineMembers(Array.isArray(data.onlineMembers) ? data.onlineMembers : []);
           setOnlineTotal(data.totalCount ?? 0);
         }
       })
@@ -111,7 +111,7 @@ export function ChatRoom() {
       getChatOnline(chatId)
         .then((data) => {
           if (!cancelled) {
-            setOnlineMembers(data.onlineMembers ?? []);
+            setOnlineMembers(Array.isArray(data.onlineMembers) ? data.onlineMembers : []);
             setOnlineTotal(data.totalCount ?? 0);
           }
         })
@@ -143,7 +143,7 @@ export function ChatRoom() {
   const handleMessageUpdated = useCallback((data: { id: string; chatId: string; text: string }) => {
     if (data.chatId !== chatId) return;
     setMessages((prev) =>
-      prev.map((m) => (m.id === data.id ? { ...m, text: data.text, editedAt: new Date().toISOString() } : m))
+      (Array.isArray(prev) ? prev : []).map((m) => (m.id === data.id ? { ...m, text: data.text, editedAt: new Date().toISOString() } : m))
     );
   }, [chatId]);
 
@@ -265,10 +265,10 @@ export function ChatRoom() {
         {onlineTotal > 0 && (
           <div className={styles.onlineBlock}>
             <span className={styles.onlineLabel}>
-              В чате: {onlineMembers.length} из {onlineTotal}
+              В чате: {(Array.isArray(onlineMembers) ? onlineMembers : []).length} из {onlineTotal}
             </span>
             <div className={styles.onlineAvatars}>
-              {onlineMembers.slice(0, 8).map((m) => (
+              {(Array.isArray(onlineMembers) ? onlineMembers : []).slice(0, 8).map((m) => (
                 <span key={m.id} className={styles.onlineAvatar} title={m.name}>
                   {m.name.slice(0, 1).toUpperCase()}
                 </span>
@@ -281,7 +281,7 @@ export function ChatRoom() {
         {loading ? (
           <div className={styles.loading}>Загрузка сообщений…</div>
         ) : (
-          messages.map((msg) => (
+          (Array.isArray(messages) ? messages : []).map((msg) => (
             <div
               key={msg.id}
               className={msg.authorId === user?.id ? styles.messageOut : styles.messageIn}

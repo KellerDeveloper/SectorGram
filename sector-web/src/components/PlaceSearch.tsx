@@ -109,7 +109,7 @@ export function PlaceSearch({
           {error && !loading && <div className={styles.error}>{error}</div>}
           {results.length > 0 && !loading && (
             <ul className={styles.list}>
-              {results.map((r, i) => (
+              {(Array.isArray(results) ? results : []).map((r, i) => (
                 <li key={i}>
                   <button
                     type="button"

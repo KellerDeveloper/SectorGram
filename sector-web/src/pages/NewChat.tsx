@@ -20,7 +20,7 @@ export function NewChat() {
     setSearching(true);
     try {
       const list = await searchUsers(q);
-      setUsers(list.filter((u) => u.id !== user?.id));
+      setUsers(Array.isArray(list) ? list.filter((u) => u.id !== user?.id) : []);
     } catch {
       setUsers([]);
     } finally {
@@ -60,7 +60,7 @@ export function NewChat() {
         </button>
       </div>
       <ul className={styles.userList}>
-        {users.map((u) => (
+        {(Array.isArray(users) ? users : []).map((u) => (
           <li key={u.id} className={styles.userItem}>
             <span className={styles.userName}>{u.name}</span>
             <span className={styles.userEmail}>{u.email}</span>

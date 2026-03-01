@@ -13,7 +13,7 @@ export function ChatList() {
     let cancelled = false;
     getChats()
       .then((list) => {
-        if (!cancelled) setChats(list);
+        if (!cancelled) setChats(Array.isArray(list) ? list : []);
       })
       .catch((err: Error) => {
         if (!cancelled) setError(err.message);
@@ -49,7 +49,7 @@ export function ChatList() {
           <div className={styles.loading}>Загрузка…</div>
         ) : (
           <ul className={styles.chatList}>
-            {chats.map((chat) => (
+            {(Array.isArray(chats) ? chats : []).map((chat) => (
               <li key={chat.id}>
                 <Link to={`/chat/${chat.id}`} className={styles.chatItem}>
                   <div className={styles.chatAvatar}>
