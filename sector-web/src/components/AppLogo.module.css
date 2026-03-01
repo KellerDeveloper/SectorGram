@@ -1,13 +1,21 @@
 .link {
   display: inline-flex;
   align-items: center;
+  gap: 0.5rem;
   text-decoration: none;
   margin: 0;
 }
 
 .img {
-  height: 1.75rem;
+  height: 2.25rem;
   width: auto;
   display: block;
   vertical-align: middle;
+}
+
+.text {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }

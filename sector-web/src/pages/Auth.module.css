@@ -22,14 +22,24 @@
 
 .logoWrap {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
 .logo {
-  height: 2.5rem;
+  height: 3rem;
   width: auto;
   display: block;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
 }
 
 .subtitle {
