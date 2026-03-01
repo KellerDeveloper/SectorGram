@@ -100,11 +100,19 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
       if (e.data.size) chunksRef.current.push(e.data);
     };
     recorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+      const type = recorder.mimeType || "video/webm";
       const durationSec = (Date.now() - startTimeRef.current) / 1000;
-      setRecordedBlob(blob);
-      setRecordedDuration(durationSec);
-      setStatus("recorded");
+      requestAnimationFrame(() => {
+        const blob = new Blob(chunksRef.current, { type });
+        if (blob.size === 0) {
+          setError("Запись пустая. Запишите хотя бы 1–2 секунды.");
+          setStatus("ready");
+          return;
+        }
+        setRecordedBlob(blob);
+        setRecordedDuration(durationSec);
+        setStatus("recorded");
+      });
     };
     recorder.start(200);
     recorderRef.current = recorder;
@@ -114,14 +122,23 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
   }, []);
 
   const stopRecording = useCallback(() => {
-    if (recorderRef.current && recorderRef.current.state !== "inactive") {
-      recorderRef.current.stop();
+    const rec = recorderRef.current;
+    if (rec && rec.state !== "inactive") {
+      try {
+        rec.requestData();
+      } catch {
+        // не все браузеры поддерживают requestData
+      }
+      rec.stop();
     }
     recorderRef.current = null;
   }, []);
 
   const handleSend = useCallback(() => {
-    if (!recordedBlob) return;
+    if (!recordedBlob || recordedBlob.size === 0) {
+      setError("Нечего отправлять. Запишите видео ещё раз.");
+      return;
+    }
     if (recordedUrlRef.current) {
       URL.revokeObjectURL(recordedUrlRef.current);
       recordedUrlRef.current = null;

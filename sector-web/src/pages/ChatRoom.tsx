@@ -169,6 +169,9 @@ export function ChatRoom() {
   useSocketOn(socket, "message_deleted", handleMessageDeleted);
   useSocketOn(socket, "user_typing", handleUserTyping);
   useSocketOn(socket, "user_stopped_typing", handleUserStoppedTyping);
+  useSocketOn(socket, "error", (data: { message?: string }) => {
+    if (data?.message) setVideoError(data.message);
+  });
 
   useEffect(() => {
     listRef.current?.scrollTo(0, listRef.current.scrollHeight);
@@ -223,11 +226,16 @@ export function ChatRoom() {
   const onRecordedVideoNoteSend = useCallback(
     async (result: { blob: Blob; durationSec: number }) => {
       if (!socket || !chatId) return;
+      if (result.blob.size === 0) {
+        setVideoError("Запись пустая. Запишите 1–2 секунды и попробуйте снова.");
+        return;
+      }
       setVideoError("");
       setVideoUploading(true);
       setRecorderOpen(false);
       try {
-        const file = new File([result.blob], "video-note.webm", { type: result.blob.type || "video/webm" });
+        const mimeType = result.blob.type && result.blob.type.startsWith("video/") ? result.blob.type : "video/webm";
+        const file = new File([result.blob], "video-note.webm", { type: mimeType });
         const res = await uploadVideoNote(file, Math.round(result.durationSec), result.blob.size);
         socket.emit("send_message", {
           chatId,
