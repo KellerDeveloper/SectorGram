@@ -44,36 +44,15 @@ export function ChatRoom() {
     if (!video) return;
     if (playingVideoId === msgId) {
       video.pause();
-      video.muted = true;
-      video.loop = true;
-      video.play().catch(() => {});
       setPlayingVideoId(null);
-      videoNoteIds.forEach((id) => {
-        const v = videoRefs.current[id];
-        if (v && id !== msgId) {
-          v.muted = true;
-          v.loop = true;
-          v.play().catch(() => {});
-        }
-      });
       return;
     }
-    videoNoteIds.forEach((id) => {
-      const v = videoRefs.current[id];
-      if (!v) return;
-      if (id === msgId) {
-        v.currentTime = 0;
-        v.muted = false;
-        v.loop = false;
-        v.play().catch(() => {});
-      } else {
-        v.muted = true;
-        v.loop = true;
-        v.play().catch(() => {});
-      }
-    });
+    video.currentTime = 0;
+    video.muted = false;
+    video.loop = false;
+    video.play().catch(() => {});
     setPlayingVideoId(msgId);
-  }, [playingVideoId, videoNoteIds]);
+  }, [playingVideoId]);
 
   const onVideoTimeUpdate = useCallback((msgId: string) => {
     const video = videoRefs.current[msgId];
@@ -85,12 +64,6 @@ export function ChatRoom() {
     if (!playingVideoId) return;
     const idx = videoNoteIds.indexOf(playingVideoId);
     const nextId = idx >= 0 && idx < videoNoteIds.length - 1 ? videoNoteIds[idx + 1] : null;
-    const endedVideo = videoRefs.current[playingVideoId];
-    if (endedVideo) {
-      endedVideo.muted = true;
-      endedVideo.loop = true;
-      endedVideo.play().catch(() => {});
-    }
     setVideoProgress((prev) => ({ ...prev, [playingVideoId]: 1 }));
     setPlayingVideoId(null);
     if (nextId) {
@@ -328,35 +301,31 @@ export function ChatRoom() {
                   <video
                     ref={(el) => {
                       videoRefs.current[msg.id] = el;
-                      if (el && playingVideoId !== msg.id) {
-                        el.muted = true;
-                        el.loop = true;
-                        el.play().catch(() => {});
-                      }
                     }}
                     src={msg.media.url}
                     className={styles.videoNote}
                     preload="metadata"
                     muted
-                    loop
                     playsInline
                     onTimeUpdate={() => onVideoTimeUpdate(msg.id)}
                     onEnded={onVideoEnded}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <svg className={styles.videoProgressRing} viewBox="0 0 200 200" aria-hidden>
-                    <circle className={styles.videoProgressTrack} cx="100" cy="100" r="97" />
-                    <circle
-                      className={styles.videoProgressFill}
-                      cx="100"
-                      cy="100"
-                      r="97"
-                      style={{
-                        strokeDasharray: 2 * Math.PI * 97,
-                        strokeDashoffset: 2 * Math.PI * 97 * (1 - (videoProgress[msg.id] ?? 0)),
-                      }}
-                    />
-                  </svg>
+                  {playingVideoId === msg.id && (
+                    <svg className={styles.videoProgressRing} viewBox="0 0 200 200" aria-hidden>
+                      <circle className={styles.videoProgressTrack} cx="100" cy="100" r="97" />
+                      <circle
+                        className={styles.videoProgressFill}
+                        cx="100"
+                        cy="100"
+                        r="97"
+                        style={{
+                          strokeDasharray: 2 * Math.PI * 97,
+                          strokeDashoffset: 2 * Math.PI * 97 * (1 - (videoProgress[msg.id] ?? 0)),
+                        }}
+                      />
+                    </svg>
+                  )}
                   {msg.media.duration != null && (
                     <span className={styles.videoDuration}>{msg.media.duration} сек</span>
                   )}
