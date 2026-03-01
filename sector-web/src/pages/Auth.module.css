@@ -30,12 +30,11 @@
 }
 
 .logo {
-  height: 9rem;
-  width: auto;
-  max-width: 100%;
+  width: 100%;
+  height: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
-  object-fit: contain;
+  object-fit: fill;
 }
 
 .title {
