@@ -27,15 +27,17 @@
   justify-content: center;
   gap: 0.15rem;
   margin-bottom: 0.25rem;
+  background: transparent;
 }
 
-/* Пропорции как у оригинала 809×254, изображение не искажается */
+/* Пропорции как у оригинала 809×254, без рамки — прозрачный фон */
 .logo {
-  height: 150%;
   width: 100%;
+  height: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
   object-fit: contain;
+  background: transparent;
 }
 
 .title {
