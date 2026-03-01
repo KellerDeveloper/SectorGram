@@ -33,10 +33,10 @@
 /* Пропорции как у оригинала 809×254, без рамки — прозрачный фон */
 .logo {
   width: 100%;
-  height: auto;
+  height: 60%;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
-  object-fit: contain;
+  object-fit: cover;
   background: transparent;
 }
 
