@@ -9,7 +9,7 @@
 
 /* Как на авторизации: пропорции 809×254, без рамки */
 .img {
-  height: 2.75rem;
+  height: 1.5 rem;
   width: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
