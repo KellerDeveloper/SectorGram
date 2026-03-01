@@ -4,6 +4,7 @@ import { getEvents } from "../api/events";
 import type { Event } from "../api/events";
 import { useAuth } from "../context/AuthContext";
 import { AppLogo } from "../components/AppLogo";
+import { BottomNav } from "../components/BottomNav";
 import styles from "./EventList.module.css";
 
 export function EventList() {
@@ -48,23 +49,14 @@ export function EventList() {
     <div className={styles.layout}>
       <header className={styles.header}>
         <AppLogo />
-        <nav className={styles.nav}>
-          <Link to="/" className={styles.navLink}>
-            Чаты
-          </Link>
-          <Link to="/events" className={styles.navLinkActive}>
-            События
-          </Link>
-          <Link to="/profile" className={styles.navLink}>
-            Профиль
-          </Link>
+      </header>
+      <main className={styles.main}>
+        <div className={styles.mainHead}>
+          <h2 className={styles.title}>События</h2>
           <Link to="/events/new" className={styles.newEvent}>
             Создать событие
           </Link>
-        </nav>
-      </header>
-      <main className={styles.main}>
-        <h2 className={styles.title}>События</h2>
+        </div>
         {error && <div className={styles.error}>{error}</div>}
         {loading ? (
           <div className={styles.loading}>Загрузка…</div>
@@ -97,6 +89,7 @@ export function EventList() {
           </ul>
         )}
       </main>
+      <BottomNav />
     </div>
   );
 }

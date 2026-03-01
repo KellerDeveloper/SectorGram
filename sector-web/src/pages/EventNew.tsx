@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createEvent } from "../api/events";
 import type { CreateEventPayload } from "../api/events";
+import { PlaceSearch } from "../components/PlaceSearch";
 import { YandexEventMap } from "../components/YandexEventMap";
 import styles from "./EventNew.module.css";
 
@@ -17,7 +18,20 @@ export function EventNew() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [ymapsReady, setYmapsReady] = useState(!!(typeof window !== "undefined" && window.ymaps));
   const yandexApiKey = import.meta.env.VITE_YANDEX_MAP_API_KEY ?? "";
+
+  useEffect(() => {
+    if (!yandexApiKey) return;
+    if (window.ymaps) setYmapsReady(true);
+    const id = setInterval(() => {
+      if (window.ymaps) {
+        setYmapsReady(true);
+        clearInterval(id);
+      }
+    }, 300);
+    return () => clearInterval(id);
+  }, [yandexApiKey]);
 
   function toISOLocal(dateStr: string): string {
     if (!dateStr) return "";
@@ -83,6 +97,18 @@ export function EventNew() {
               className={styles.input}
               required
             />
+            {yandexApiKey && (
+              <div className={styles.placeSearch}>
+                <PlaceSearch
+                  ymapsReady={ymapsReady}
+                  placeholder="Адрес или название места"
+                  onSelect={(r) => {
+                    setPlace(r.placeName);
+                    setLocation({ latitude: r.latitude, longitude: r.longitude });
+                  }}
+                />
+              </div>
+            )}
           </div>
           {yandexApiKey && (
             <div className={styles.field}>

@@ -4,6 +4,7 @@ import { getStories } from "../api/stories";
 import type { StoryFeedUser } from "../api/stories";
 import { useAuth } from "../context/AuthContext";
 import { AppLogo } from "../components/AppLogo";
+import { BottomNav } from "../components/BottomNav";
 import styles from "./Stories.module.css";
 
 export function Stories() {
@@ -43,26 +44,14 @@ export function Stories() {
     <div className={styles.layout}>
       <header className={styles.header}>
         <AppLogo />
-        <nav className={styles.nav}>
-          <Link to="/" className={styles.navLink}>
-            Чаты
-          </Link>
-          <Link to="/events" className={styles.navLink}>
-            События
-          </Link>
-          <Link to="/stories" className={styles.navLinkActive}>
-            Истории
-          </Link>
-          <Link to="/profile" className={styles.navLink}>
-            Профиль
-          </Link>
+      </header>
+      <main className={styles.main}>
+        <div className={styles.mainHead}>
+          <h2 className={styles.title}>Истории</h2>
           <Link to="/stories/new" className={styles.newStory}>
             Добавить историю
           </Link>
-        </nav>
-      </header>
-      <main className={styles.main}>
-        <h2 className={styles.title}>Истории</h2>
+        </div>
         {error && <div className={styles.error}>{error}</div>}
         {loading ? (
           <div className={styles.loading}>Загрузка…</div>
@@ -112,6 +101,7 @@ export function Stories() {
           </div>
         )}
       </main>
+      <BottomNav />
     </div>
   );
 }

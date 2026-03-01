@@ -4,10 +4,11 @@ import { getChats } from "../api/chats";
 import type { Chat } from "../api/chats";
 import { useAuth } from "../context/AuthContext";
 import { AppLogo } from "../components/AppLogo";
+import { BottomNav } from "../components/BottomNav";
 import styles from "./ChatList.module.css";
 
 export function ChatList() {
-  const { user, logout } = useAuth();
+  useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,16 +45,6 @@ export function ChatList() {
     <div className={styles.layout}>
       <header className={styles.header}>
         <AppLogo />
-        <div className={styles.user}>
-          <Link to="/events" className={styles.navLink}>События</Link>
-          <Link to="/stories" className={styles.navLink}>Истории</Link>
-          <Link to="/profile" className={styles.profileLink}>
-            {user?.name}
-          </Link>
-          <button type="button" onClick={logout} className={styles.logout}>
-            Выйти
-          </button>
-        </div>
       </header>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
@@ -91,6 +82,7 @@ export function ChatList() {
           <p>Выберите чат слева или создайте новый.</p>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

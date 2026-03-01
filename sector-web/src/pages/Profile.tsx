@@ -5,10 +5,11 @@ import { updateMe } from "../api/users";
 import type { UpdateMePayload } from "../api/users";
 import { registerPushToken } from "../api/notifications";
 import { AppLogo } from "../components/AppLogo";
+import { BottomNav } from "../components/BottomNav";
 import styles from "./Profile.module.css";
 
 export function Profile() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -74,14 +75,6 @@ export function Profile() {
     <div className={styles.layout}>
       <header className={styles.header}>
         <AppLogo />
-        <div className={styles.nav}>
-          <Link to="/" className={styles.link}>
-            Чаты
-          </Link>
-          <Link to="/" className={styles.link}>
-            На главную
-          </Link>
-        </div>
       </header>
       <main className={styles.main}>
         <div className={styles.card}>
@@ -166,8 +159,15 @@ export function Profile() {
               </p>
             )}
           </section>
+
+          <section className={styles.section}>
+            <button type="button" onClick={() => logout()} className={styles.logout}>
+              Выйти
+            </button>
+          </section>
         </div>
       </main>
+      <BottomNav />
     </div>
   );
 }

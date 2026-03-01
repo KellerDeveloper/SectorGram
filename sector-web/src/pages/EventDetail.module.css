@@ -1,5 +1,6 @@
 .layout {
   min-height: 100vh;
+  padding-top: var(--header-h);
   background: var(--bg-base);
   background-image: var(--bg-gradient);
   display: flex;
@@ -7,13 +8,21 @@
 }
 
 .header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 0.75rem 1.5rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
 }
 
 .back {
@@ -79,15 +88,41 @@
   margin: 0 0 1rem 0;
 }
 
-.mapWrap {
+.mapBlock {
   margin-bottom: 1rem;
+}
+
+.mapWrap {
   border-radius: var(--radius);
   overflow: hidden;
   border: 1px solid var(--glass-border);
+  margin-bottom: 0.75rem;
 }
 
 .map {
   display: block;
+}
+
+.mapActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.mapButton {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mapButton:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .description {
