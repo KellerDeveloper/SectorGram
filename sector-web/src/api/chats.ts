@@ -11,6 +11,14 @@ export type Chat = {
   updatedAt?: string;
 };
 
+export type MessageMedia = {
+  type: "photo" | "video" | "file" | "audio" | "sticker" | "videoNote";
+  url?: string;
+  thumbnail?: string;
+  duration?: number;
+  size?: number;
+};
+
 export type Message = {
   id: string;
   chatId: string;
@@ -20,6 +28,7 @@ export type Message = {
   editedAt?: string;
   author?: ChatMember;
   replyTo?: { id: string; text: string };
+  media?: MessageMedia;
   reactions?: { emoji: string; count: number; userIds?: string[] }[];
   readBy?: { userId: string; readAt: string }[];
 };
@@ -50,4 +59,15 @@ export async function deleteMessage(messageId: string): Promise<void> {
 
 export async function markChatRead(chatId: string): Promise<void> {
   await api.post(`/chats/${chatId}/read`);
+}
+
+export type ChatOnlineResult = {
+  chatId: string;
+  onlineCount: number;
+  totalCount: number;
+  onlineMembers: { id: string; name: string; email?: string }[];
+};
+
+export async function getChatOnline(chatId: string): Promise<ChatOnlineResult> {
+  return api.get<ChatOnlineResult>(`/chats/${chatId}/online`);
 }

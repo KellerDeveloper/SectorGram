@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { updateMe } from "../api/users";
 import type { UpdateMePayload } from "../api/users";
+import { registerPushToken } from "../api/notifications";
 import styles from "./Profile.module.css";
 
 export function Profile() {
@@ -14,6 +15,9 @@ export function Profile() {
   const [avatar, setAvatar] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [pushToken, setPushToken] = useState("");
+  const [pushSaving, setPushSaving] = useState(false);
+  const [pushMessage, setPushMessage] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -42,6 +46,24 @@ export function Profile() {
       setError(err instanceof Error ? err.message : "Ошибка сохранения");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRegisterPush() {
+    const token = pushToken.trim();
+    if (!token) {
+      setPushMessage("Введите токен");
+      return;
+    }
+    setPushMessage("");
+    setPushSaving(true);
+    try {
+      await registerPushToken(token);
+      setPushMessage("Токен сохранён. Уведомления будут приходить на это устройство.");
+    } catch (err: unknown) {
+      setPushMessage(err instanceof Error ? err.message : "Ошибка регистрации");
+    } finally {
+      setPushSaving(false);
     }
   }
 
@@ -114,6 +136,35 @@ export function Profile() {
               </Link>
             </div>
           </form>
+
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Уведомления</h3>
+            <p className={styles.sectionHint}>
+              Для получения push-уведомлений зарегистрируйте токен устройства (например, Expo Push Token).
+            </p>
+            <div className={styles.pushRow}>
+              <input
+                type="text"
+                value={pushToken}
+                onChange={(e) => setPushToken(e.target.value)}
+                className={styles.input}
+                placeholder="Expo Push Token или endpoint"
+              />
+              <button
+                type="button"
+                className={styles.buttonSecondary}
+                onClick={handleRegisterPush}
+                disabled={pushSaving}
+              >
+                {pushSaving ? "…" : "Зарегистрировать"}
+              </button>
+            </div>
+            {pushMessage && (
+              <p className={pushMessage.startsWith("Токен") ? styles.pushSuccess : styles.pushError}>
+                {pushMessage}
+              </p>
+            )}
+          </section>
         </div>
       </main>
     </div>

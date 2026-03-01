@@ -120,3 +120,13 @@
   background: var(--accent-alpha);
   text-decoration: none;
 }
+
+.googleWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.googleWrap > div {
+  margin: 0 auto;
+}

@@ -34,9 +34,36 @@
   gap: 1rem;
 }
 
-.userName {
+.userName,
+.profileLink {
   color: var(--text-secondary);
   font-size: 0.9rem;
+}
+
+.profileLink {
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius);
+  transition: color 0.2s, background 0.2s;
+}
+
+.profileLink:hover {
+  color: var(--accent);
+  background: var(--accent-alpha);
+}
+
+.navLink {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.35rem 0.5rem;
+  border-radius: var(--radius);
+  transition: color 0.2s, background 0.2s;
+}
+
+.navLink:hover {
+  color: var(--accent);
+  background: var(--accent-alpha);
 }
 
 .logout {

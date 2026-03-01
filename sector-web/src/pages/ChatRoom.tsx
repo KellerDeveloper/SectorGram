@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getMessages, markChatRead } from "../api/chats";
+import { getMessages, markChatRead, getChatOnline } from "../api/chats";
 import type { Message } from "../api/chats";
+import { uploadVideoNote } from "../api/media";
 import { useAuth } from "../context/AuthContext";
 import { useSocket, useSocketOn } from "../socket/useSocket";
 import styles from "./ChatRoom.module.css";
+
+type OnlineMember = { id: string; name: string; email?: string };
 
 export function ChatRoom() {
   const { id: chatId } = useParams<{ id: string }>();
@@ -14,8 +17,13 @@ export function ChatRoom() {
   const [loading, setLoading] = useState(true);
   const [input, setInput] = useState("");
   const [typingUser, setTypingUser] = useState<string | null>(null);
+  const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([]);
+  const [onlineTotal, setOnlineTotal] = useState(0);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const [videoError, setVideoError] = useState("");
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!chatId) return;
@@ -30,6 +38,35 @@ export function ChatRoom() {
       });
     return () => {
       cancelled = true;
+    };
+  }, [chatId]);
+
+  useEffect(() => {
+    if (!chatId) return;
+    let cancelled = false;
+    getChatOnline(chatId)
+      .then((data) => {
+        if (!cancelled) {
+          setOnlineMembers(data.onlineMembers ?? []);
+          setOnlineTotal(data.totalCount ?? 0);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setOnlineMembers([]);
+      });
+    const interval = setInterval(() => {
+      getChatOnline(chatId)
+        .then((data) => {
+          if (!cancelled) {
+            setOnlineMembers(data.onlineMembers ?? []);
+            setOnlineTotal(data.totalCount ?? 0);
+          }
+        })
+        .catch(() => {});
+    }, 15000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
     };
   }, [chatId]);
 
@@ -103,6 +140,33 @@ export function ChatRoom() {
     }, 2000);
   };
 
+  const onVideoNoteSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file || !socket || !chatId) return;
+      setVideoError("");
+      setVideoUploading(true);
+      try {
+        const res = await uploadVideoNote(file);
+        socket.emit("send_message", {
+          chatId,
+          media: {
+            type: "videoNote",
+            url: res.url,
+            thumbnail: res.thumbnailUrl ?? undefined,
+            duration: res.duration ?? undefined,
+          },
+        });
+      } catch (err: unknown) {
+        setVideoError(err instanceof Error ? err.message : "Ошибка загрузки");
+      } finally {
+        setVideoUploading(false);
+      }
+    },
+    [socket, chatId]
+  );
+
   if (!chatId) return null;
 
   return (
@@ -110,6 +174,20 @@ export function ChatRoom() {
       <header className={styles.header}>
         <Link to="/" className={styles.back}>← Чаты</Link>
         <span className={styles.chatTitle}>Чат {chatId.slice(-6)}</span>
+        {onlineTotal > 0 && (
+          <div className={styles.onlineBlock}>
+            <span className={styles.onlineLabel}>
+              В чате: {onlineMembers.length} из {onlineTotal}
+            </span>
+            <div className={styles.onlineAvatars}>
+              {onlineMembers.slice(0, 8).map((m) => (
+                <span key={m.id} className={styles.onlineAvatar} title={m.name}>
+                  {m.name.slice(0, 1).toUpperCase()}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </header>
       <div className={styles.messagesWrap} ref={listRef}>
         {loading ? (
@@ -123,7 +201,21 @@ export function ChatRoom() {
               {msg.author && msg.authorId !== user?.id && (
                 <span className={styles.authorName}>{msg.author.name}</span>
               )}
-              <div className={styles.bubble}>{msg.text}</div>
+              {msg.media?.type === "videoNote" && msg.media.url && (
+                <div className={styles.mediaBubble}>
+                  <video
+                    src={msg.media.url}
+                    controls
+                    className={styles.videoNote}
+                    preload="metadata"
+                  />
+                  {msg.media.duration != null && (
+                    <span className={styles.videoDuration}>{msg.media.duration} сек</span>
+                  )}
+                </div>
+              )}
+              {msg.text && <div className={styles.bubble}>{msg.text}</div>}
+              {!msg.text && !msg.media && <div className={styles.bubble}>(медиа)</div>}
               <span className={styles.time}>
                 {new Date(msg.createdAt).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" })}
                 {msg.editedAt && " (ред.)"}
@@ -135,7 +227,25 @@ export function ChatRoom() {
           <div className={styles.typing}>{typingUser} печатет…</div>
         )}
       </div>
+      {videoError && <div className={styles.videoError}>{videoError}</div>}
       <form onSubmit={sendMessage} className={styles.form}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          className={styles.hiddenInput}
+          onChange={onVideoNoteSelect}
+          disabled={videoUploading}
+        />
+        <button
+          type="button"
+          className={styles.videoBtn}
+          onClick={() => fileInputRef.current?.click()}
+          disabled={videoUploading}
+          title="Видеокружок"
+        >
+          {videoUploading ? "…" : "🎬"}
+        </button>
         <input
           type="text"
           value={input}

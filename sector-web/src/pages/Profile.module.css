@@ -161,3 +161,65 @@
   color: var(--text-primary);
   background: var(--bg-hover);
 }
+
+.section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.sectionHint {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 1rem 0;
+}
+
+.pushRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.pushRow .input {
+  flex: 1;
+}
+
+.pushSuccess {
+  font-size: 0.875rem;
+  color: var(--accent);
+  margin: 0.5rem 0 0 0;
+}
+
+.pushError {
+  font-size: 0.875rem;
+  color: var(--danger);
+  margin: 0.5rem 0 0 0;
+}
+
+.buttonSecondary {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.buttonSecondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.buttonSecondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

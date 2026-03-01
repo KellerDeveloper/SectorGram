@@ -9,6 +9,8 @@ type AuthState = {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 };
 
@@ -50,13 +52,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(result.user);
   }, []);
 
+  const loginWithGoogle = useCallback(async (idToken: string) => {
+    const result = await authApi.loginWithGoogle(idToken);
+    setUser(result.user);
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const me = await getMe();
+      setUser(me);
+    } catch {
+      setUser(null);
+      authApi.logout();
+    }
+  }, []);
+
   const logout = useCallback(() => {
     authApi.logout();
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, loginWithGoogle, refreshUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

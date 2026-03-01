@@ -44,7 +44,11 @@ export function ChatList() {
       <header className={styles.header}>
         <h1 className={styles.logo}>Sector</h1>
         <div className={styles.user}>
-          <span className={styles.userName}>{user?.name}</span>
+          <Link to="/events" className={styles.navLink}>События</Link>
+          <Link to="/stories" className={styles.navLink}>Истории</Link>
+          <Link to="/profile" className={styles.profileLink}>
+            {user?.name}
+          </Link>
           <button type="button" onClick={logout} className={styles.logout}>
             Выйти
           </button>

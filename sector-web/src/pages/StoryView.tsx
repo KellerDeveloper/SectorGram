@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getUserStories, viewStory, deleteStory } from "../api/stories";
-import type { StoryItem, UserStoriesData } from "../api/stories";
+import type { UserStoriesData } from "../api/stories";
 import { useAuth } from "../context/AuthContext";
 import styles from "./StoryView.module.css";
 

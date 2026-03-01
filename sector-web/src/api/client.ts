@@ -1,5 +1,5 @@
 // Локальная разработка: /api (прокси на backend). Продакшен: VITE_API_URL (например https://api.sector.moscow)
-const API_BASE =
+export const API_BASE =
   import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ""
     ? import.meta.env.VITE_API_URL
     : "/api";

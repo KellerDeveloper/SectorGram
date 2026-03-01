@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../context/AuthContext";
 import styles from "./Auth.module.css";
 
@@ -8,8 +9,26 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  async function handleGoogleSuccess(credentialResponse: { credential?: string }) {
+    const idToken = credentialResponse.credential;
+    if (!idToken) {
+      setError("Не получен токен от Google");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      await loginWithGoogle(idToken);
+      navigate("/", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Ошибка входа через Google");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,6 +43,8 @@ export function Login() {
       setLoading(false);
     }
   }
+
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
   return (
     <div className={styles.wrap}>
@@ -54,6 +75,20 @@ export function Login() {
             {loading ? "Вход…" : "Войти"}
           </button>
         </form>
+        {googleClientId && (
+          <div className={styles.form}>
+            <div className={styles.googleWrap}>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => setError("Ошибка входа через Google")}
+                useOneTap={false}
+                theme="filled_black"
+                size="large"
+                text="continue_with"
+              />
+            </div>
+          </div>
+        )}
         <p className={styles.footer}>
           Нет аккаунта? <Link to="/register">Регистрация</Link>
         </p>

@@ -6,6 +6,13 @@ import { Register } from "./pages/Register";
 import { ChatList } from "./pages/ChatList";
 import { ChatRoom } from "./pages/ChatRoom";
 import { NewChat } from "./pages/NewChat";
+import { Profile } from "./pages/Profile";
+import { EventList } from "./pages/EventList";
+import { EventNew } from "./pages/EventNew";
+import { EventDetail } from "./pages/EventDetail";
+import { Stories } from "./pages/Stories";
+import { StoryView } from "./pages/StoryView";
+import { StoryNew } from "./pages/StoryNew";
 import "./index.css";
 
 function Protected({ children }: { children: React.ReactNode }) {
@@ -41,6 +48,62 @@ function AppRoutes() {
         element={
           <Protected>
             <NewChat />
+          </Protected>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <Protected>
+            <Profile />
+          </Protected>
+        }
+      />
+      <Route
+        path="/events"
+        element={
+          <Protected>
+            <EventList />
+          </Protected>
+        }
+      />
+      <Route
+        path="/events/new"
+        element={
+          <Protected>
+            <EventNew />
+          </Protected>
+        }
+      />
+      <Route
+        path="/events/:id"
+        element={
+          <Protected>
+            <EventDetail />
+          </Protected>
+        }
+      />
+      <Route
+        path="/stories"
+        element={
+          <Protected>
+            <Stories />
+          </Protected>
+        }
+      />
+      <Route
+        path="/stories/new"
+        element={
+          <Protected>
+            <StoryNew />
+          </Protected>
+        }
+      />
+      <Route
+        path="/stories/:userId"
+        element={
+          <Protected>
+            <StoryView />
           </Protected>
         }
       />

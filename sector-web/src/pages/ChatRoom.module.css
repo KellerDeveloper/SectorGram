@@ -37,6 +37,36 @@
   color: var(--text-primary);
 }
 
+.onlineBlock {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.onlineLabel {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.onlineAvatars {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.onlineAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--accent-alpha);
+  color: var(--accent);
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .messagesWrap {
   flex: 1;
   overflow-y: auto;
@@ -107,10 +137,26 @@
   padding: 0.25rem 0;
 }
 
+.hiddenInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.videoError {
+  padding: 0.35rem 1rem;
+  font-size: 0.8rem;
+  color: var(--danger);
+  background: var(--danger-bg);
+}
+
 .form {
   display: flex;
   gap: 0.5rem;
   padding: 1rem;
+  align-items: center;
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
@@ -163,4 +209,44 @@
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.videoBtn {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.videoBtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.videoBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mediaBubble {
+  margin-bottom: 0.25rem;
+}
+
+.videoNote {
+  max-width: 240px;
+  max-height: 320px;
+  border-radius: var(--radius);
+  background: #000;
+}
+
+.videoDuration {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
