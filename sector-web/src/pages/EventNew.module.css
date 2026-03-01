@@ -137,6 +137,11 @@
   margin: 0 0 0.35rem 0;
 }
 
+.fieldMap {
+  position: relative;
+  z-index: 0;
+}
+
 .map {
   border-radius: var(--radius);
   overflow: hidden;

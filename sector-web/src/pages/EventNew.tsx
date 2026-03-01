@@ -114,7 +114,7 @@ export function EventNew() {
               )}
             </div>
           </div>
-          <div className={styles.field}>
+          <div className={styles.fieldMap}>
             <label className={styles.label}>Точка на карте</label>
             <p className={styles.hint}>Клик по карте — отметить место проведения</p>
             {yandexApiKey ? (
