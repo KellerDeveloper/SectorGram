@@ -13,7 +13,6 @@
   width: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
-  vertical-align: middle;
   object-fit: cover;
   background: transparent;
 }
