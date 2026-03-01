@@ -162,3 +162,99 @@
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+
+/* Мобильная версия */
+@media (max-width: 640px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+
+  .search {
+    padding: 0.75rem;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+
+  .button {
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .userList {
+    padding: 0.75rem;
+  }
+
+  .userItem {
+    padding: 0.75rem;
+  }
+
+  .userEmail {
+    font-size: 0.8rem;
+  }
+
+  .startBtn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .userItem {
+    flex-wrap: wrap;
+  }
+
+  .userName {
+    width: 100%;
+  }
+
+  .userEmail {
+    width: 100%;
+  }
+}
+
+/* Мобильная версия */
+@media (max-width: 640px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .title {
+    font-size: 1rem;
+  }
+
+  .search {
+    padding: 0.75rem;
+  }
+
+  .input {
+    font-size: 16px;
+  }
+
+  .button {
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .userList {
+    padding: 0.75rem;
+  }
+
+  .userItem {
+    padding: 0.75rem;
+  }
+
+  .userEmail {
+    font-size: 0.8rem;
+  }
+
+  .startBtn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.85rem;
+  }
+}

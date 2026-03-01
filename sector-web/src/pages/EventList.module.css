@@ -172,3 +172,56 @@
   color: var(--text-muted);
   margin-top: 0.5rem;
 }
+
+/* Мобильная версия */
+@media (max-width: 640px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav {
+    gap: 0.5rem;
+  }
+
+  .navLink,
+  .navLinkActive {
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  .newEvent {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .main {
+    padding: 1rem 0.75rem;
+  }
+
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .cardTitle {
+    font-size: 1rem;
+  }
+
+  .cardMeta,
+  .cardDesc {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .card {
+    padding: 0.85rem;
+  }
+}

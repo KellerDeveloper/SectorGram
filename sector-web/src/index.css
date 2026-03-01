@@ -34,6 +34,10 @@
 
   /* Кружки историй (как в Telegram): серая обводка для просмотренных */
   --story-ring-seen: rgba(255, 255, 255, 0.2);
+
+  /* Адаптив: брейкпоинты для мобильных */
+  --bp-mobile: 640px;
+  --bp-mobile-sm: 480px;
 }
 
 /* Утилита для стеклянных панелей */
@@ -82,4 +86,16 @@ body {
 
 a {
   color: inherit;
+}
+
+/* Базовые улучшения для мобильных: зона безопасного отступа, тач-цели */
+@media (max-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+
+  #root {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
 }

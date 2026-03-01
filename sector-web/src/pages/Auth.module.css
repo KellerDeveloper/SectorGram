@@ -150,3 +150,53 @@
 .googleWrap > div {
   margin: 0 auto;
 }
+
+/* Мобильная версия */
+@media (max-width: 640px) {
+  .wrap {
+    padding: 0.75rem;
+    align-items: stretch;
+  }
+
+  .card {
+    max-width: none;
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+  }
+
+  .logo {
+    width: 60%;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .input,
+  .button {
+    padding: 0.85rem 1rem;
+    font-size: 16px; /* убирает зум iOS при фокусе */
+  }
+
+  .footer {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrap {
+    padding: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .title {
+    font-size: 1.35rem;
+  }
+}

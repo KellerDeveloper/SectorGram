@@ -129,3 +129,39 @@
   border-radius: 50%;
   background: var(--accent);
 }
+
+/* Мобильная версия */
+@media (max-width: 640px) {
+  .header {
+    padding: 0.5rem 0.75rem;
+    padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  .back {
+    font-size: 0.85rem;
+  }
+
+  .sideBtn {
+    width: 25%;
+    min-width: 48px; /* удобная тач-зона */
+  }
+
+  .content {
+    max-height: 65vh;
+  }
+
+  .textStory {
+    padding: 1.5rem;
+    font-size: 1.1rem;
+    max-width: 92vw;
+  }
+
+  .photoStory {
+    max-height: 65vh;
+  }
+
+  .progress {
+    padding: 0.5rem 0.75rem;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
