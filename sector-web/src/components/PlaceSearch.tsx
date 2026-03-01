@@ -85,6 +85,16 @@ export function PlaceSearch({
       return list;
     };
 
+    const fetchBiz = (): Promise<PlaceSearchResult[]> =>
+      apiKey ?
+        fetch(
+          `https://search-maps.yandex.ru/v1/?apikey=${encodeURIComponent(apiKey)}&text=${encodeURIComponent(q)}&lang=ru_RU&type=biz&results=8`
+        )
+          .then((r) => r.json())
+          .then(parseBizResponse)
+          .catch(() => [] as PlaceSearchResult[])
+      : Promise.resolve<PlaceSearchResult[]>([]);
+
     const runSearch = () => {
       const geocodePromise =
         window.ymaps ?
@@ -117,16 +127,6 @@ export function PlaceSearch({
           })
         : Promise.resolve<PlaceSearchResult[]>([]);
 
-      const fetchBiz = (): Promise<PlaceSearchResult[]> =>
-      apiKey ?
-        fetch(
-          `https://search-maps.yandex.ru/v1/?apikey=${encodeURIComponent(apiKey)}&text=${encodeURIComponent(q)}&lang=ru_RU&type=biz&results=8`
-        )
-          .then((r) => r.json())
-          .then(parseBizResponse)
-          .catch(() => [] as PlaceSearchResult[])
-      : Promise.resolve<PlaceSearchResult[]>([]);
-
       const bizPromise = fetchBiz();
 
       Promise.all([bizPromise, geocodePromise])
@@ -156,7 +156,7 @@ export function PlaceSearch({
       window.ymaps.ready(runSearch);
     } else if (apiKey) {
       fetchBiz()
-        .then((bizList) => {
+        .then((bizList: PlaceSearchResult[]) => {
           setResults(bizList);
           if (bizList.length === 0) setError("Ничего не найдено");
         })
