@@ -49,7 +49,7 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
         width: { ideal: 640 },
         height: { ideal: 640 },
       },
-      audio: false,
+      audio: true,
     };
 
     navigator.mediaDevices
