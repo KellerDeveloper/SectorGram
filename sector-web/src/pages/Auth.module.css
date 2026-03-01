@@ -29,12 +29,13 @@
   margin-bottom: 0.25rem;
 }
 
+/* Пропорции как у оригинала 809×254, изображение не искажается */
 .logo {
   width: 100%;
   height: auto;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
-  object-fit: fill;
+  object-fit: contain;
 }
 
 .title {
