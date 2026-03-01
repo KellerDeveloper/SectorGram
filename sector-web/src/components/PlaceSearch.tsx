@@ -61,13 +61,12 @@ export function PlaceSearch({
           }
           setResults(list);
           if (list.length === 0) setError("Ничего не найдено");
+          setLoading(false);
         })
         .catch(() => {
           setError(
             "Ничего не найдено. Если ошибка повторяется, проверьте ключ API и включите «HTTP Геокодер» в developer.tech.yandex.ru"
           );
-        })
-        .finally(() => {
           setLoading(false);
         });
     };
