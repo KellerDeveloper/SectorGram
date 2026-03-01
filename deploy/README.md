@@ -74,11 +74,19 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ### SSL (Let's Encrypt)
 
-Сначала убедитесь, что DNS для `sector.moscow`, `www.sector.moscow` и `api.sector.moscow` указывает на сервер. Затем:
+Сначала убедитесь, что DNS для `sector.moscow`, `www.sector.moscow` и **`api.sector.moscow`** указывает на IP сервера. Затем **обязательно** укажите все три домена:
 
 ```bash
 sudo certbot --nginx -d sector.moscow -d www.sector.moscow -d api.sector.moscow
 ```
+
+Если сертификат был получен без `api.sector.moscow`, браузер и curl будут выдавать ошибку вида «subjectAltName does not match host name api.sector.moscow» и запросы к API будут падать. Добавить домен в существующий сертификат:
+
+```bash
+sudo certbot --nginx -d sector.moscow -d www.sector.moscow -d api.sector.moscow --expand
+```
+
+После этого перезагрузите nginx: `sudo nginx -t && sudo systemctl reload nginx`.
 
 Certbot сам добавит SSL в конфиг. Если вы уже скопировали конфиг из репозитория с путями к сертификатам, после certbot пути будут вида `/etc/letsencrypt/live/sector.moscow/...` — они уже прописаны в `sector.moscow.conf`.
 
