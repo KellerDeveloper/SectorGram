@@ -9,6 +9,7 @@ yarn-error.log*
 
 dist
 build
+*.tsbuildinfo
 
 /.DS_Store
 **/.DS_Store
