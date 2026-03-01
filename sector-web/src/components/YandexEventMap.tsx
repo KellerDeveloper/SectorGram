@@ -9,8 +9,9 @@ declare global {
         state: { center: number[]; zoom: number },
         options?: object
       ) => {
-        geoObjects: { add: (obj: unknown) => void };
+        geoObjects: { add: (obj: unknown) => void; remove: (obj: unknown) => void };
         events: { add: (type: string, handler: (e: { get: (key: string) => number[] }) => void) => void };
+        setCenter: (center: number[]) => void;
         destroy: () => void;
       };
       Placemark: new (coords: number[], properties?: object, options?: object) => unknown;
@@ -67,20 +68,24 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
     };
   }, [apiKey]);
 
+  const centerRef = useRef(center);
+  centerRef.current = center;
+
   const initMap = useCallback(() => {
     if (!containerRef.current || !window.ymaps || mapRef.current) return;
+    const initialCenter = centerRef.current;
     window.ymaps.ready(() => {
       if (!containerRef.current || !window.ymaps) return;
       try {
         const map = new window.ymaps.Map(
           containerRef.current,
-          { center, zoom },
+          { center: initialCenter, zoom },
           { suppressMapOpenBlock: true }
         );
         mapRef.current = map;
         if (mode === "view") {
           const placemark = new window.ymaps.Placemark(
-            center,
+            initialCenter,
             {},
             { preset: "islands#redIcon" }
           );
@@ -109,7 +114,7 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
         setError("Ошибка инициализации карты");
       }
     });
-  }, [center, zoom, mode, onPointSelect]);
+  }, [zoom, mode, onPointSelect]);
 
   useEffect(() => {
     if (!ready || !window.ymaps) return;
@@ -124,14 +129,13 @@ export function YandexEventMap({ apiKey, center, zoom = 16, mode, onPointSelect,
   }, [ready, initMap]);
 
   useEffect(() => {
-    if (mapRef.current && mode === "view") {
-      mapRef.current.setCenter(center);
-      if (window.ymaps && placemarkRef.current) {
-        mapRef.current.geoObjects.remove(placemarkRef.current as never);
-        const placemark = new window.ymaps.Placemark(center, {}, { preset: "islands#redIcon" });
-        placemarkRef.current = placemark;
-        mapRef.current.geoObjects.add(placemark);
-      }
+    if (!mapRef.current || !window.ymaps) return;
+    mapRef.current.setCenter(center);
+    if (mode === "view") {
+      if (placemarkRef.current) mapRef.current.geoObjects.remove(placemarkRef.current as never);
+      const placemark = new window.ymaps.Placemark(center, {}, { preset: "islands#redIcon" });
+      placemarkRef.current = placemark;
+      mapRef.current.geoObjects.add(placemark);
     }
   }, [center, mode]);
 

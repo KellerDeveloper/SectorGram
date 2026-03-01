@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getEvents } from "../api/events";
 import type { Event } from "../api/events";
 import { useAuth } from "../context/AuthContext";
+import { AppLogo } from "../components/AppLogo";
 import styles from "./EventList.module.css";
 
 export function EventList() {
@@ -46,7 +47,7 @@ export function EventList() {
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>Sector</h1>
+        <AppLogo />
         <nav className={styles.nav}>
           <Link to="/" className={styles.navLink}>
             Чаты

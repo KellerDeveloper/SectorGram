@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createEvent } from "../api/events";
 import type { CreateEventPayload } from "../api/events";
+import { YandexEventMap } from "../components/YandexEventMap";
 import styles from "./EventNew.module.css";
+
+const DEFAULT_MAP_CENTER: [number, number] = [55.75, 37.62];
 
 export function EventNew() {
   const navigate = useNavigate();
@@ -11,8 +14,10 @@ export function EventNew() {
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
   const [description, setDescription] = useState("");
+  const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const yandexApiKey = import.meta.env.VITE_YANDEX_MAP_API_KEY ?? "";
 
   function toISOLocal(dateStr: string): string {
     if (!dateStr) return "";
@@ -36,6 +41,7 @@ export function EventNew() {
       };
       if (endsAt) payload.endsAt = toISOLocal(endsAt);
       if (description.trim()) payload.description = description.trim();
+      if (location) payload.location = location;
       const event = await createEvent(payload);
       navigate(`/events/${event.id}`, { replace: true });
     } catch (err: unknown) {
@@ -78,6 +84,28 @@ export function EventNew() {
               required
             />
           </div>
+          {yandexApiKey && (
+            <div className={styles.field}>
+              <label className={styles.label}>Точка на карте</label>
+              <p className={styles.hint}>Клик по карте — отметить место проведения</p>
+              <YandexEventMap
+                apiKey={yandexApiKey}
+                center={location ? [location.latitude, location.longitude] : DEFAULT_MAP_CENTER}
+                mode="pick"
+                onPointSelect={(lat, lon) => setLocation({ latitude: lat, longitude: lon })}
+                className={styles.map}
+              />
+              {location && (
+                <button
+                  type="button"
+                  className={styles.clearMap}
+                  onClick={() => setLocation(null)}
+                >
+                  Убрать точку с карты
+                </button>
+              )}
+            </div>
+          )}
           <div className={styles.field}>
             <label className={styles.label}>Начало *</label>
             <input

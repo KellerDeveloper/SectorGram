@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { updateMe } from "../api/users";
 import type { UpdateMePayload } from "../api/users";
 import { registerPushToken } from "../api/notifications";
+import { AppLogo } from "../components/AppLogo";
 import styles from "./Profile.module.css";
 
 export function Profile() {
@@ -72,7 +73,7 @@ export function Profile() {
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>Sector</h1>
+        <AppLogo />
         <div className={styles.nav}>
           <Link to="/" className={styles.link}>
             Чаты

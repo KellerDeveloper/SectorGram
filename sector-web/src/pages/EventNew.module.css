@@ -90,6 +90,33 @@
   min-height: 5rem;
 }
 
+.hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0 0 0.35rem 0;
+}
+
+.map {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.clearMap {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  text-decoration: underline;
+}
+
+.clearMap:hover {
+  color: var(--text-secondary);
+}
+
 .actions {
   display: flex;
   align-items: center;

@@ -79,6 +79,17 @@
   margin: 0 0 1rem 0;
 }
 
+.mapWrap {
+  margin-bottom: 1rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+}
+
+.map {
+  display: block;
+}
+
 .description {
   font-size: 0.95rem;
   color: var(--text-secondary);

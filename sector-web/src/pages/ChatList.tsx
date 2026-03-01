@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getChats } from "../api/chats";
 import type { Chat } from "../api/chats";
 import { useAuth } from "../context/AuthContext";
+import { AppLogo } from "../components/AppLogo";
 import styles from "./ChatList.module.css";
 
 export function ChatList() {
@@ -42,7 +43,7 @@ export function ChatList() {
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>Sector</h1>
+        <AppLogo />
         <div className={styles.user}>
           <Link to="/events" className={styles.navLink}>События</Link>
           <Link to="/stories" className={styles.navLink}>Истории</Link>

@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getEvent, joinEvent, leaveEvent } from "../api/events";
 import type { Event } from "../api/events";
 import { useAuth } from "../context/AuthContext";
+import { YandexEventMap } from "../components/YandexEventMap";
 import styles from "./EventDetail.module.css";
 
 export function EventDetail() {
@@ -97,6 +98,18 @@ export function EventDetail() {
             {event.endsAt && <span> — {formatDate(event.endsAt)}</span>}
           </div>
           <p className={styles.place}>{event.place}</p>
+          {event.location?.latitude != null &&
+            event.location?.longitude != null &&
+            (import.meta.env.VITE_YANDEX_MAP_API_KEY ? (
+              <div className={styles.mapWrap}>
+                <YandexEventMap
+                  apiKey={import.meta.env.VITE_YANDEX_MAP_API_KEY}
+                  center={[event.location.latitude, event.location.longitude]}
+                  mode="view"
+                  className={styles.map}
+                />
+              </div>
+            ) : null)}
           {event.description && (
             <div className={styles.description}>{event.description}</div>
           )}

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getStories } from "../api/stories";
 import type { StoryFeedUser } from "../api/stories";
 import { useAuth } from "../context/AuthContext";
+import { AppLogo } from "../components/AppLogo";
 import styles from "./Stories.module.css";
 
 export function Stories() {
@@ -41,7 +42,7 @@ export function Stories() {
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>Sector</h1>
+        <AppLogo />
         <nav className={styles.nav}>
           <Link to="/" className={styles.navLink}>
             Чаты
