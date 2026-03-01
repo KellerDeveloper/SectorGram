@@ -33,7 +33,7 @@
   height: 9rem;
   width: auto;
   max-width: 100%;
-  aspect-ratio: 809 / 254;
+  aspect-ratio: var(--logo-aspect-ratio);
   display: block;
   object-fit: contain;
 }

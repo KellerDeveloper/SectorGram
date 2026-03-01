@@ -9,7 +9,7 @@
 .img {
   height: 2.75rem;
   width: auto;
-  aspect-ratio: 809 / 254;
+  aspect-ratio: var(--logo-aspect-ratio);
   display: block;
   vertical-align: middle;
   object-fit: contain;
