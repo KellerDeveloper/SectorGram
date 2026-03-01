@@ -33,32 +33,43 @@ export function PlaceSearch({
     setError("");
     setLoading(true);
     setResults([]);
-    window.ymaps
-      .geocode(q)
-      .then((res) => {
-        const len = res.geoObjects.getLength();
-        const list: PlaceSearchResult[] = [];
-        for (let i = 0; i < Math.min(len, 8); i++) {
-          const obj = res.geoObjects.get(i);
-          const coords = obj.geometry.getCoordinates();
-          // В API Яндекса координаты [долгота, широта]
-          const longitude = coords[0];
-          const latitude = coords[1];
-          const name =
-            obj.properties.get("name") ||
-            obj.properties.get("description") ||
-            obj.properties.get("text") ||
-            q;
-          list.push({ latitude, longitude, placeName: name });
-        }
-        setResults(list);
-      })
-      .catch(() => {
-        setError("Ничего не найдено");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    const runGeocode = () => {
+      if (!window.ymaps) return;
+      window.ymaps
+        .geocode(q, { results: 8 })
+        .then((res) => {
+          const len = res.geoObjects.getLength();
+          const list: PlaceSearchResult[] = [];
+          for (let i = 0; i < len; i++) {
+            const obj = res.geoObjects.get(i) as {
+              geometry: { getCoordinates: () => number[] };
+              properties: { get: (key: string) => string };
+              getAddressLine?: () => string;
+            };
+            const coords = obj.geometry.getCoordinates();
+            if (!coords || coords.length < 2) continue;
+            // В API Яндекса координаты [широта, долгота]
+            const latitude = coords[0];
+            const longitude = coords[1];
+            const name =
+              (typeof obj.getAddressLine === "function" && obj.getAddressLine()) ||
+              obj.properties.get("text") ||
+              obj.properties.get("name") ||
+              obj.properties.get("description") ||
+              q;
+            list.push({ latitude, longitude, placeName: String(name || q) });
+          }
+          setResults(list);
+          if (list.length === 0) setError("Ничего не найдено");
+        })
+        .catch(() => {
+          setError("Ничего не найдено");
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
+    window.ymaps.ready(runGeocode);
   }, [query]);
 
   useEffect(() => {
