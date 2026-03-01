@@ -8,17 +8,6 @@ export type PlaceSearchResult = {
   placeName: string;
 };
 
-/** Ответ API Поиска по организациям (search-maps.yandex.ru/v1) */
-type SearchMapsFeature = {
-  type: string;
-  geometry?: { type: string; coordinates?: number[] };
-  properties?: {
-    name?: string;
-    description?: string;
-    CompanyMetaData?: { name?: string; address?: string; Address?: { formatted?: string } };
-  };
-};
-
 type Props = {
   /** Уже загружен ли API (например, карта на странице загрузила скрипт) */
   ymapsReady: boolean;
@@ -28,18 +17,15 @@ type Props = {
   /** Управляемое значение (адрес) */
   value?: string;
   onChange?: (value: string) => void;
-  /** Ключ API Яндекса для поиска по организациям (search-maps.yandex.ru). Если не передан, используется только геокодер. */
-  apiKey?: string;
 };
 
 export function PlaceSearch({
   ymapsReady,
   onSelect,
-  placeholder = "Адрес или название места",
+  placeholder = "Адрес",
   className,
   value,
   onChange,
-  apiKey,
 }: Props) {
   const [internalQuery, setInternalQuery] = useState("");
   const query = value !== undefined ? value : internalQuery;
@@ -59,113 +45,48 @@ export function PlaceSearch({
 
   const search = useCallback(() => {
     const q = query.trim();
-    if (!q) return;
+    if (!q || !window.ymaps) return;
     setError("");
     setLoading(true);
     setResults([]);
-
-    const parseBizResponse = (data: { features?: SearchMapsFeature[] }): PlaceSearchResult[] => {
-      const list: PlaceSearchResult[] = [];
-      const features = data?.features ?? [];
-      for (const f of features) {
-        const coords = f.geometry?.coordinates;
-        if (!coords || coords.length < 2) continue;
-        // В Search API coordinates: [longitude, latitude]
-        const longitude = coords[0];
-        const latitude = coords[1];
-        const name =
-          f.properties?.name ??
-          f.properties?.CompanyMetaData?.name ??
-          f.properties?.description ??
-          f.properties?.CompanyMetaData?.Address?.formatted ??
-          f.properties?.CompanyMetaData?.address ??
-          q;
-        list.push({ latitude, longitude, placeName: String(name) });
-      }
-      return list;
-    };
-
-    const fetchBiz = (): Promise<PlaceSearchResult[]> =>
-      apiKey ?
-        fetch(
-          `https://search-maps.yandex.ru/v1/?apikey=${encodeURIComponent(apiKey)}&text=${encodeURIComponent(q)}&lang=ru_RU&type=biz&results=8`
-        )
-          .then((r) => r.json())
-          .then(parseBizResponse)
-          .catch(() => [] as PlaceSearchResult[])
-      : Promise.resolve<PlaceSearchResult[]>([]);
-
-    const runSearch = () => {
-      const geocodePromise =
-        window.ymaps ?
-          new Promise<PlaceSearchResult[]>((resolve, reject) => {
-            window.ymaps!.geocode(q, { results: 8 })
-              .then((res) => {
-                const len = res.geoObjects.getLength();
-                const list: PlaceSearchResult[] = [];
-                for (let i = 0; i < len; i++) {
-                  const obj = res.geoObjects.get(i) as {
-                    geometry: { getCoordinates: () => number[] };
-                    properties: { get: (key: string) => string };
-                    getAddressLine?: () => string;
-                  };
-                  const coords = obj.geometry.getCoordinates();
-                  if (!coords || coords.length < 2) continue;
-                  const latitude = coords[0];
-                  const longitude = coords[1];
-                  const name =
-                    (typeof obj.getAddressLine === "function" && obj.getAddressLine()) ||
-                    obj.properties.get("text") ||
-                    obj.properties.get("name") ||
-                    obj.properties.get("description") ||
-                    q;
-                  list.push({ latitude, longitude, placeName: String(name || q) });
-                }
-                resolve(list);
-              })
-              .catch(reject);
-          })
-        : Promise.resolve<PlaceSearchResult[]>([]);
-
-      const bizPromise = fetchBiz();
-
-      Promise.all([bizPromise, geocodePromise])
-        .then(([bizList, geoList]) => {
-          const seen = new Set<string>();
-          const merged: PlaceSearchResult[] = [];
-          const add = (r: PlaceSearchResult) => {
-            const key = `${r.latitude.toFixed(4)},${r.longitude.toFixed(4)}`;
-            if (seen.has(key)) return;
-            seen.add(key);
-            merged.push(r);
-          };
-          bizList.forEach(add);
-          geoList.forEach(add);
-          setResults(merged);
-          if (merged.length === 0) setError("Ничего не найдено");
+    const runGeocode = () => {
+      if (!window.ymaps) return;
+      window.ymaps
+        .geocode(q, { results: 8 })
+        .then((res) => {
+          const len = res.geoObjects.getLength();
+          const list: PlaceSearchResult[] = [];
+          for (let i = 0; i < len; i++) {
+            const obj = res.geoObjects.get(i) as {
+              geometry: { getCoordinates: () => number[] };
+              properties: { get: (key: string) => string };
+              getAddressLine?: () => string;
+            };
+            const coords = obj.geometry.getCoordinates();
+            if (!coords || coords.length < 2) continue;
+            const latitude = coords[0];
+            const longitude = coords[1];
+            const name =
+              (typeof obj.getAddressLine === "function" && obj.getAddressLine()) ||
+              obj.properties.get("text") ||
+              obj.properties.get("name") ||
+              obj.properties.get("description") ||
+              q;
+            list.push({ latitude, longitude, placeName: String(name || q) });
+          }
+          setResults(list);
+          if (list.length === 0) setError("Ничего не найдено");
+          setLoading(false);
         })
         .catch(() => {
           setError(
-            "Ничего не найдено. Если ошибка повторяется, проверьте ключ API и включите «Геокодер» и «Поиск по организациям» в developer.tech.yandex.ru"
+            "Ничего не найдено. Проверьте ключ API и включите «Геокодер» в developer.tech.yandex.ru"
           );
-        })
-        .finally(() => setLoading(false));
+          setLoading(false);
+        });
     };
-
-    if (window.ymaps) {
-      window.ymaps.ready(runSearch);
-    } else if (apiKey) {
-      fetchBiz()
-        .then((bizList: PlaceSearchResult[]) => {
-          setResults(bizList);
-          if (bizList.length === 0) setError("Ничего не найдено");
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setError("Загрузка карты…");
-      setLoading(false);
-    }
-  }, [query, apiKey]);
+    window.ymaps.ready(runGeocode);
+  }, [query]);
 
   useEffect(() => {
     if (!focused) setResults([]);
