@@ -30,6 +30,14 @@ export function Stories() {
 
   const myEntry = feed.find((e) => e.userId === user?.id);
 
+  /** Есть ли непросмотренные истории у этого пользователя (для градиентной обводки как в ТГ) */
+  const hasUnseen = (entry: StoryFeedUser) => {
+    if (!user?.id) return false;
+    return entry.stories.some(
+      (s) => !(s.viewedBy ?? []).some((v) => v.userId === user.id)
+    );
+  };
+
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
@@ -62,13 +70,15 @@ export function Stories() {
             {myEntry && (
               <Link to={`/stories/${myEntry.userId}`} className={styles.userCard}>
                 <div className={styles.avatarWrap}>
-                  <span className={styles.avatar}>
-                    {myEntry.user?.avatar ? (
-                      <img src={myEntry.user.avatar} alt="" />
-                    ) : (
-                      myEntry.user?.name?.slice(0, 1).toUpperCase()
-                    )}
-                  </span>
+                  <div className={`${styles.ring} ${styles.ringSeen}`}>
+                    <span className={styles.avatar}>
+                      {myEntry.user?.avatar ? (
+                        <img src={myEntry.user.avatar} alt="" />
+                      ) : (
+                        myEntry.user?.name?.slice(0, 1).toUpperCase()
+                      )}
+                    </span>
+                  </div>
                   <span className={styles.plus}>+</span>
                 </div>
                 <span className={styles.userName}>Мои истории</span>
@@ -83,13 +93,17 @@ export function Stories() {
                   className={styles.userCard}
                 >
                   <div className={styles.avatarWrap}>
-                    <span className={styles.avatar}>
-                      {entry.user?.avatar ? (
-                        <img src={entry.user.avatar} alt="" />
-                      ) : (
-                        entry.user?.name?.slice(0, 1).toUpperCase()
-                      )}
-                    </span>
+                    <div
+                      className={`${styles.ring} ${hasUnseen(entry) ? styles.ringUnseen : styles.ringSeen}`}
+                    >
+                      <span className={styles.avatar}>
+                        {entry.user?.avatar ? (
+                          <img src={entry.user.avatar} alt="" />
+                        ) : (
+                          entry.user?.name?.slice(0, 1).toUpperCase()
+                        )}
+                      </span>
+                    </div>
                   </div>
                   <span className={styles.userName}>{entry.user?.name ?? "Пользователь"}</span>
                 </Link>

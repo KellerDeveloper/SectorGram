@@ -235,18 +235,34 @@
   cursor: not-allowed;
 }
 
+/* Видеосообщение как в Telegram — круглый кружок */
 .mediaBubble {
+  position: relative;
   margin-bottom: 0.25rem;
+  width: 200px;
+  height: 200px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
 .videoNote {
-  max-width: 240px;
-  max-height: 320px;
-  border-radius: var(--radius);
-  background: #000;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .videoDuration {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
