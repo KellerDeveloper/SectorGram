@@ -9,8 +9,10 @@
 .img {
   height: 2.75rem;
   width: auto;
+  aspect-ratio: 809 / 254;
   display: block;
   vertical-align: middle;
+  object-fit: contain;
 }
 
 .text {

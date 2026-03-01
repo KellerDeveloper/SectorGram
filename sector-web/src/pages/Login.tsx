@@ -54,7 +54,7 @@ export function Login() {
     <div className={styles.wrap}>
       <div className={styles.card}>
         <div className={styles.logoWrap}>
-          <img src="/logo.png" alt="" className={styles.logo} />
+          <img src="/logo.png" alt="" className={styles.logo} width={809} height={254} />
           <h1 className={styles.title}>Sector</h1>
         </div>
         <p className={styles.subtitle}>Вход в мессенджер</p>

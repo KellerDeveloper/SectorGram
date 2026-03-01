@@ -32,7 +32,10 @@
 .logo {
   height: 9rem;
   width: auto;
+  max-width: 100%;
+  aspect-ratio: 809 / 254;
   display: block;
+  object-fit: contain;
 }
 
 .title {
