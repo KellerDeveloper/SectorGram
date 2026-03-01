@@ -99,6 +99,8 @@
 
 .placeSearch {
   margin-top: 0.5rem;
+  position: relative;
+  z-index: 9999;
 }
 
 .mapHint,
