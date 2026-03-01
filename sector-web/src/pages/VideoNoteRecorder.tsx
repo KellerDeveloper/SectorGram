@@ -21,6 +21,7 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordedDuration, setRecordedDuration] = useState(0);
   const [recordSeconds, setRecordSeconds] = useState(0);
+  const recordedUrlRef = useRef<string | null>(null);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -121,12 +122,20 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
 
   const handleSend = useCallback(() => {
     if (!recordedBlob) return;
+    if (recordedUrlRef.current) {
+      URL.revokeObjectURL(recordedUrlRef.current);
+      recordedUrlRef.current = null;
+    }
     onSend({ blob: recordedBlob, durationSec: recordedDuration });
     onClose();
   }, [recordedBlob, recordedDuration, onSend, onClose]);
 
   const handleCancel = useCallback(() => {
     if (status === "recorded") {
+      if (recordedUrlRef.current) {
+        URL.revokeObjectURL(recordedUrlRef.current);
+        recordedUrlRef.current = null;
+      }
       setRecordedBlob(null);
       setRecordedDuration(0);
       setStatus("ready");
@@ -135,15 +144,25 @@ export function VideoNoteRecorder({ open, onClose, onSend }: Props) {
     }
   }, [status, onClose]);
 
+  const recordedVideoUrl = recordedBlob ? (recordedUrlRef.current ?? (recordedUrlRef.current = URL.createObjectURL(recordedBlob))) : null;
+  useEffect(() => {
+    return () => {
+      if (recordedUrlRef.current) {
+        URL.revokeObjectURL(recordedUrlRef.current);
+        recordedUrlRef.current = null;
+      }
+    };
+  }, []);
+
   if (!open) return null;
 
   return (
     <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && handleCancel()}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.previewWrap}>
-          {status === "recorded" && recordedBlob ? (
+          {status === "recorded" && recordedVideoUrl ? (
             <video
-              src={URL.createObjectURL(recordedBlob)}
+              src={recordedVideoUrl}
               className={styles.recordedPreview}
               playsInline
               muted

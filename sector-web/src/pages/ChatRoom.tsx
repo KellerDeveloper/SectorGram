@@ -5,6 +5,7 @@ import type { Message } from "../api/chats";
 import { uploadVideoNote } from "../api/media";
 import { useAuth } from "../context/AuthContext";
 import { useSocket, useSocketOn } from "../socket/useSocket";
+import { VideoNoteRecorder } from "./VideoNoteRecorder";
 import styles from "./ChatRoom.module.css";
 
 type OnlineMember = { id: string; name: string; email?: string };
@@ -21,6 +22,7 @@ export function ChatRoom() {
   const [onlineTotal, setOnlineTotal] = useState(0);
   const [videoUploading, setVideoUploading] = useState(false);
   const [videoError, setVideoError] = useState("");
+  const [recorderOpen, setRecorderOpen] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -218,6 +220,33 @@ export function ChatRoom() {
     [socket, chatId]
   );
 
+  const onRecordedVideoNoteSend = useCallback(
+    async (result: { blob: Blob; durationSec: number }) => {
+      if (!socket || !chatId) return;
+      setVideoError("");
+      setVideoUploading(true);
+      setRecorderOpen(false);
+      try {
+        const file = new File([result.blob], "video-note.webm", { type: result.blob.type || "video/webm" });
+        const res = await uploadVideoNote(file, Math.round(result.durationSec), result.blob.size);
+        socket.emit("send_message", {
+          chatId,
+          media: {
+            type: "videoNote",
+            url: res.url,
+            thumbnail: res.thumbnailUrl ?? undefined,
+            duration: res.duration ?? undefined,
+          },
+        });
+      } catch (err: unknown) {
+        setVideoError(err instanceof Error ? err.message : "Ошибка загрузки");
+      } finally {
+        setVideoUploading(false);
+      }
+    },
+    [socket, chatId]
+  );
+
   if (!chatId) return null;
 
   return (
@@ -318,12 +347,26 @@ export function ChatRoom() {
         <button
           type="button"
           className={styles.videoBtn}
+          onClick={() => setRecorderOpen(true)}
+          disabled={videoUploading}
+          title="Записать видеокружок"
+        >
+          {videoUploading ? "…" : "⏺"}
+        </button>
+        <button
+          type="button"
+          className={styles.videoBtn}
           onClick={() => fileInputRef.current?.click()}
           disabled={videoUploading}
-          title="Видеокружок"
+          title="Загрузить видео из файла"
         >
-          {videoUploading ? "…" : "🎬"}
+          {videoUploading ? "…" : "📎"}
         </button>
+        <VideoNoteRecorder
+          open={recorderOpen}
+          onClose={() => setRecorderOpen(false)}
+          onSend={onRecordedVideoNoteSend}
+        />
         <input
           type="text"
           value={input}
