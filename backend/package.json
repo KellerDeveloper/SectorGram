@@ -10,6 +10,7 @@
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "view-db": "node scripts/view-db.js",
     "clean-db": "node scripts/clean-db.js",
+    "clean-chats-events": "node scripts/clean-chats-events.js",
     "seed:kellermobile": "node scripts/seed-test-chats-kellermobile.js"
   },
   "dependencies": {
