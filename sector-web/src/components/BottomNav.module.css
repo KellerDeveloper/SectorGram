@@ -1,0 +1,63 @@
+/* Нижняя панель как в Telegram Web */
+.nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  padding: 0.35rem 0;
+  padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.25rem;
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  border-radius: var(--radius);
+  transition: color 0.2s, background 0.2s;
+}
+
+.link:hover {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
+  text-decoration: none;
+}
+
+.linkActive {
+  color: var(--accent);
+}
+
+.linkActive:hover {
+  color: var(--accent);
+  background: var(--accent-alpha);
+  text-decoration: none;
+}
+
+.icon {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
