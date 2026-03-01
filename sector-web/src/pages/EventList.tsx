@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { getEvents } from "../api/events";
 import type { Event } from "../api/events";
 import { useAuth } from "../context/AuthContext";
-import { AppLogo } from "../components/AppLogo";
-import { BottomNav } from "../components/BottomNav";
 import styles from "./EventList.module.css";
 
 export function EventList() {
@@ -47,9 +45,6 @@ export function EventList() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <AppLogo />
-      </header>
       <main className={styles.main}>
         <div className={styles.mainHead}>
           <h2 className={styles.title}>События</h2>
@@ -89,7 +84,6 @@ export function EventList() {
           </ul>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }

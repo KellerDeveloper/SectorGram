@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import { getStories } from "../api/stories";
 import type { StoryFeedUser } from "../api/stories";
 import { useAuth } from "../context/AuthContext";
-import { AppLogo } from "../components/AppLogo";
-import { BottomNav } from "../components/BottomNav";
 import styles from "./Stories.module.css";
 
 export function Stories() {
@@ -42,9 +40,6 @@ export function Stories() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <AppLogo />
-      </header>
       <main className={styles.main}>
         <div className={styles.mainHead}>
           <h2 className={styles.title}>Истории</h2>
@@ -101,7 +96,6 @@ export function Stories() {
           </div>
         )}
       </main>
-      <BottomNav />
     </div>
   );
 }

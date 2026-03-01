@@ -4,8 +4,6 @@ import { useAuth } from "../context/AuthContext";
 import { updateMe } from "../api/users";
 import type { UpdateMePayload } from "../api/users";
 import { registerPushToken } from "../api/notifications";
-import { AppLogo } from "../components/AppLogo";
-import { BottomNav } from "../components/BottomNav";
 import styles from "./Profile.module.css";
 
 export function Profile() {
@@ -73,9 +71,6 @@ export function Profile() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <AppLogo />
-      </header>
       <main className={styles.main}>
         <div className={styles.card}>
           <h2 className={styles.title}>Профиль</h2>
@@ -167,7 +162,6 @@ export function Profile() {
           </section>
         </div>
       </main>
-      <BottomNav />
     </div>
   );
 }

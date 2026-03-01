@@ -97,8 +97,8 @@ export function EventNew() {
               className={styles.input}
               required
             />
-            {yandexApiKey && (
-              <div className={styles.placeSearch}>
+            <div className={styles.placeSearch}>
+              {yandexApiKey ? (
                 <PlaceSearch
                   ymapsReady={ymapsReady}
                   placeholder="Адрес или название места"
@@ -107,31 +107,50 @@ export function EventNew() {
                     setLocation({ latitude: r.latitude, longitude: r.longitude });
                   }}
                 />
+              ) : (
+                <p className={styles.mapHint}>
+                  Для поиска по адресу задайте <code>VITE_YANDEX_MAP_API_KEY</code> в .env
+                </p>
+              )}
+            </div>
+          </div>
+          <div className={styles.field}>
+            <label className={styles.label}>Точка на карте</label>
+            <p className={styles.hint}>Клик по карте — отметить место проведения</p>
+            {yandexApiKey ? (
+              <>
+                <YandexEventMap
+                  apiKey={yandexApiKey}
+                  center={location ? [location.latitude, location.longitude] : DEFAULT_MAP_CENTER}
+                  mode="pick"
+                  onPointSelect={(lat, lon) => setLocation({ latitude: lat, longitude: lon })}
+                  className={styles.map}
+                />
+                {location && (
+                  <button
+                    type="button"
+                    className={styles.clearMap}
+                    onClick={() => setLocation(null)}
+                  >
+                    Убрать точку с карты
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className={styles.mapPlaceholder}>
+                Чтобы выбрать место на карте, укажите ключ Яндекс.Карт в переменной{" "}
+                <code>VITE_YANDEX_MAP_API_KEY</code> (получить:{" "}
+                <a
+                  href="https://developer.tech.yandex.ru/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  developer.tech.yandex.ru
+                </a>
+                ).
               </div>
             )}
           </div>
-          {yandexApiKey && (
-            <div className={styles.field}>
-              <label className={styles.label}>Точка на карте</label>
-              <p className={styles.hint}>Клик по карте — отметить место проведения</p>
-              <YandexEventMap
-                apiKey={yandexApiKey}
-                center={location ? [location.latitude, location.longitude] : DEFAULT_MAP_CENTER}
-                mode="pick"
-                onPointSelect={(lat, lon) => setLocation({ latitude: lat, longitude: lon })}
-                className={styles.map}
-              />
-              {location && (
-                <button
-                  type="button"
-                  className={styles.clearMap}
-                  onClick={() => setLocation(null)}
-                >
-                  Убрать точку с карты
-                </button>
-              )}
-            </div>
-          )}
           <div className={styles.field}>
             <label className={styles.label}>Начало *</label>
             <input

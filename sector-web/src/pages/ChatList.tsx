@@ -2,13 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getChats } from "../api/chats";
 import type { Chat } from "../api/chats";
-import { useAuth } from "../context/AuthContext";
-import { AppLogo } from "../components/AppLogo";
-import { BottomNav } from "../components/BottomNav";
 import styles from "./ChatList.module.css";
 
 export function ChatList() {
-  useAuth();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -43,9 +39,6 @@ export function ChatList() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.header}>
-        <AppLogo />
-      </header>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarHeader}>
           <h2>Чаты</h2>
@@ -82,7 +75,6 @@ export function ChatList() {
           <p>Выберите чат слева или создайте новый.</p>
         </div>
       </main>
-      <BottomNav />
     </div>
   );
 }

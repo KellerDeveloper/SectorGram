@@ -1,18 +1,16 @@
 .layout {
   min-height: 100vh;
-  padding-top: var(--header-h);
-  background: var(--bg-base);
-  background-image: var(--bg-gradient);
   display: flex;
   flex-direction: column;
+  background: var(--bg-base);
+  background-image: var(--bg-gradient);
 }
 
 .header {
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
+  z-index: 10;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -101,6 +99,34 @@
 
 .placeSearch {
   margin-top: 0.5rem;
+}
+
+.mapHint,
+.mapPlaceholder {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius);
+}
+
+.mapHint code,
+.mapPlaceholder code {
+  font-size: 0.8em;
+  padding: 0.1em 0.35em;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.mapPlaceholder a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.mapPlaceholder a:hover {
+  text-decoration: underline;
 }
 
 .hint {
