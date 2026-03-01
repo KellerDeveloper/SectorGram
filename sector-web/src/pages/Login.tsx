@@ -53,7 +53,9 @@ export function Login() {
   return (
     <div className={styles.wrap}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Sector</h1>
+        <div className={styles.logoWrap}>
+          <img src="/logo.png" alt="Sector" className={styles.logo} />
+        </div>
         <p className={styles.subtitle}>Вход в мессенджер</p>
         <form onSubmit={handleSubmit} className={styles.form}>
           {error && <div className={styles.error}>{error}</div>}

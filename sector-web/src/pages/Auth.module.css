@@ -20,12 +20,16 @@
   box-shadow: var(--glass-shadow), 0 24px 48px rgba(0, 0, 0, 0.25);
 }
 
-.title {
-  font-family: var(--font-heading);
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem 0;
-  color: var(--text-primary);
+.logoWrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.logo {
+  height: 2.5rem;
+  width: auto;
+  display: block;
 }
 
 .subtitle {
