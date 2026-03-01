@@ -1,0 +1,129 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 100%;
+}
+
+.previewWrap {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+}
+
+.previewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.recordedPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.recordBtn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.recordBtn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.recordBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recordBtnRecording {
+  background: #ef4444;
+  border-color: #ef4444;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+.timer {
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+.cancelBtn,
+.sendBtn {
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.cancelBtn {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sendBtn {
+  background: var(--accent);
+  color: white;
+  border: none;
+}
+
+.cancelBtn:hover,
+.sendBtn:hover {
+  opacity: 0.95;
+}
+
+.error {
+  padding: 0.5rem 1rem;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
