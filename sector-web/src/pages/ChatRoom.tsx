@@ -274,12 +274,19 @@ export function ChatRoom() {
                     onEnded={onVideoEnded}
                     onClick={(e) => e.stopPropagation()}
                   />
-                  <div className={styles.videoProgressTrack}>
-                    <div
+                  <svg className={styles.videoProgressRing} viewBox="0 0 200 200" aria-hidden>
+                    <circle className={styles.videoProgressTrack} cx="100" cy="100" r="97" />
+                    <circle
                       className={styles.videoProgressFill}
-                      style={{ width: `${(videoProgress[msg.id] ?? 0) * 100}%` }}
+                      cx="100"
+                      cy="100"
+                      r="97"
+                      style={{
+                        strokeDasharray: 2 * Math.PI * 97,
+                        strokeDashoffset: 2 * Math.PI * 97 * (1 - (videoProgress[msg.id] ?? 0)),
+                      }}
                     />
-                  </div>
+                  </svg>
                   {msg.media.duration != null && (
                     <span className={styles.videoDuration}>{msg.media.duration} сек</span>
                   )}
