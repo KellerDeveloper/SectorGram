@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./VideoNoteRecorder.module.css";
 
 export type VideoNoteRecorderResult = { blob: Blob; durationSec: number };
