@@ -31,8 +31,8 @@
 
 /* Пропорции как у оригинала 809×254, изображение не искажается */
 .logo {
-  height: 50%;
-  width: 50%;
+  height: 150%;
+  width: 100%;
   aspect-ratio: var(--logo-aspect-ratio);
   display: block;
   object-fit: contain;
