@@ -44,16 +44,36 @@ export function ChatRoom() {
     if (!video) return;
     if (playingVideoId === msgId) {
       video.pause();
+      video.muted = true;
+      video.loop = true;
+      video.play().catch(() => {});
       setPlayingVideoId(null);
+      videoNoteIds.forEach((id) => {
+        const v = videoRefs.current[id];
+        if (v && id !== msgId) {
+          v.muted = true;
+          v.loop = true;
+          v.play().catch(() => {});
+        }
+      });
       return;
     }
-    Object.values(videoRefs.current).forEach((v) => {
-      if (v && v !== video) v.pause();
+    videoNoteIds.forEach((id) => {
+      const v = videoRefs.current[id];
+      if (!v) return;
+      if (id === msgId) {
+        v.currentTime = 0;
+        v.muted = false;
+        v.loop = false;
+        v.play().catch(() => {});
+      } else {
+        v.muted = true;
+        v.loop = true;
+        v.play().catch(() => {});
+      }
     });
-    video.muted = true;
-    video.play().catch(() => {});
     setPlayingVideoId(msgId);
-  }, [playingVideoId]);
+  }, [playingVideoId, videoNoteIds]);
 
   const onVideoTimeUpdate = useCallback((msgId: string) => {
     const video = videoRefs.current[msgId];
@@ -65,13 +85,20 @@ export function ChatRoom() {
     if (!playingVideoId) return;
     const idx = videoNoteIds.indexOf(playingVideoId);
     const nextId = idx >= 0 && idx < videoNoteIds.length - 1 ? videoNoteIds[idx + 1] : null;
+    const endedVideo = videoRefs.current[playingVideoId];
+    if (endedVideo) {
+      endedVideo.muted = true;
+      endedVideo.loop = true;
+      endedVideo.play().catch(() => {});
+    }
     setVideoProgress((prev) => ({ ...prev, [playingVideoId]: 1 }));
     setPlayingVideoId(null);
     if (nextId) {
       const nextVideo = videoRefs.current[nextId];
       if (nextVideo) {
-        nextVideo.muted = true;
         nextVideo.currentTime = 0;
+        nextVideo.muted = false;
+        nextVideo.loop = false;
         nextVideo.play().catch(() => {});
         setPlayingVideoId(nextId);
       }
@@ -301,11 +328,17 @@ export function ChatRoom() {
                   <video
                     ref={(el) => {
                       videoRefs.current[msg.id] = el;
+                      if (el && playingVideoId !== msg.id) {
+                        el.muted = true;
+                        el.loop = true;
+                        el.play().catch(() => {});
+                      }
                     }}
                     src={msg.media.url}
                     className={styles.videoNote}
                     preload="metadata"
                     muted
+                    loop
                     playsInline
                     onTimeUpdate={() => onVideoTimeUpdate(msg.id)}
                     onEnded={onVideoEnded}
