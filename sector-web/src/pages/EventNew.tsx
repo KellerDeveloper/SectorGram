@@ -126,14 +126,14 @@ export function EventNew() {
             )}
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Адрес *</label>
+            <label className={styles.label}>Адрес или название заведения *</label>
             <div className={styles.placeSearch}>
               {yandexApiKey ? (
                 <PlaceSearch
                   ymapsReady={ymapsReady}
                   value={place}
                   onChange={setPlace}
-                  placeholder="Введите адрес и нажмите «Найти»"
+                  placeholder="Введите адрес или название заведения и нажмите «Найти»"
                   onSelect={(r) => {
                     setPlace(r.placeName);
                     setLocation({ latitude: r.latitude, longitude: r.longitude });
@@ -141,7 +141,7 @@ export function EventNew() {
                 />
               ) : (
                 <p className={styles.mapHint}>
-                  Для поиска по адресу задайте <code>VITE_YANDEX_MAP_API_KEY</code> в .env
+                  Для поиска по адресу или названию заведения задайте <code>VITE_YANDEX_MAP_API_KEY</code> в .env
                 </p>
               )}
             </div>
