@@ -24,6 +24,57 @@ export function ChatRoom() {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
+  const [videoProgress, setVideoProgress] = useState<Record<string, number>>({});
+
+  /** Порядок id сообщений-видеокружков для автозапуска следующего */
+  const videoNoteIds = React.useMemo(
+    () =>
+      messages
+        .filter((m) => m.media?.type === "videoNote" && m.media?.url)
+        .map((m) => m.id),
+    [messages]
+  );
+
+  const onVideoNoteClick = useCallback((msgId: string) => {
+    const video = videoRefs.current[msgId];
+    if (!video) return;
+    if (playingVideoId === msgId) {
+      video.pause();
+      setPlayingVideoId(null);
+      return;
+    }
+    Object.values(videoRefs.current).forEach((v) => {
+      if (v && v !== video) v.pause();
+    });
+    video.muted = true;
+    video.play().catch(() => {});
+    setPlayingVideoId(msgId);
+  }, [playingVideoId]);
+
+  const onVideoTimeUpdate = useCallback((msgId: string) => {
+    const video = videoRefs.current[msgId];
+    if (!video || !video.duration || !isFinite(video.duration)) return;
+    setVideoProgress((prev) => ({ ...prev, [msgId]: video.currentTime / video.duration }));
+  }, []);
+
+  const onVideoEnded = useCallback(() => {
+    if (!playingVideoId) return;
+    const idx = videoNoteIds.indexOf(playingVideoId);
+    const nextId = idx >= 0 && idx < videoNoteIds.length - 1 ? videoNoteIds[idx + 1] : null;
+    setVideoProgress((prev) => ({ ...prev, [playingVideoId]: 1 }));
+    setPlayingVideoId(null);
+    if (nextId) {
+      const nextVideo = videoRefs.current[nextId];
+      if (nextVideo) {
+        nextVideo.muted = true;
+        nextVideo.currentTime = 0;
+        nextVideo.play().catch(() => {});
+        setPlayingVideoId(nextId);
+      }
+    }
+  }, [playingVideoId, videoNoteIds]);
 
   useEffect(() => {
     if (!chatId) return;
@@ -202,13 +253,33 @@ export function ChatRoom() {
                 <span className={styles.authorName}>{msg.author.name}</span>
               )}
               {msg.media?.type === "videoNote" && msg.media.url && (
-                <div className={styles.mediaBubble}>
+                <div
+                  className={`${styles.mediaBubble} ${playingVideoId === msg.id ? styles.mediaBubblePlaying : ""}`}
+                  onClick={() => onVideoNoteClick(msg.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === "Enter" && onVideoNoteClick(msg.id)}
+                  aria-label="Воспроизвести видеокружок"
+                >
                   <video
+                    ref={(el) => {
+                      videoRefs.current[msg.id] = el;
+                    }}
                     src={msg.media.url}
-                    controls
                     className={styles.videoNote}
                     preload="metadata"
+                    muted
+                    playsInline
+                    onTimeUpdate={() => onVideoTimeUpdate(msg.id)}
+                    onEnded={onVideoEnded}
+                    onClick={(e) => e.stopPropagation()}
                   />
+                  <div className={styles.videoProgressTrack}>
+                    <div
+                      className={styles.videoProgressFill}
+                      style={{ width: `${(videoProgress[msg.id] ?? 0) * 100}%` }}
+                    />
+                  </div>
                   {msg.media.duration != null && (
                     <span className={styles.videoDuration}>{msg.media.duration} сек</span>
                   )}

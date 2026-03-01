@@ -116,7 +116,7 @@ cd backend && npm ci && pm2 restart sector-backend
 | sector.moscow, www.sector.moscow | Статика из `sector-web/dist` (SPA) |
 | api.sector.moscow | Прокси на `http://127.0.0.1:4000` (API + Socket.io) |
 
-CORS в бэкенде уже разрешает `https://sector.moscow` и `https://www.sector.moscow`.
+CORS в бэкенде разрешает `https://sector.moscow` и `https://www.sector.moscow`; для preflight явно заданы методы и заголовки (`Content-Type`, `Authorization`).
 
 ## Проверка после деплоя
 
@@ -135,4 +135,6 @@ curl -s -o /dev/null -w "%{http_code}" https://api.sector.moscow/health
 ls -la /etc/nginx/sites-enabled/
 ```
 
-Если первый `curl` не даёт 200 — запустите бэкенд: `cd /var/www/sector/backend && pm2 start ecosystem.config.cjs` (или `pm2 restart sector-backend`). Если второй не 200 — проверьте, что в `sites-enabled` только `sector.moscow.conf` и перезагрузите nginx. С вашего компьютера: `curl -v https://api.sector.moscow/health` — покажет, доступен ли API снаружи.
+Если первый `curl` не даёт 200 — запустите бэкенд: `cd /var/www/sector/backend && pm2 start ecosystem.config.cjs` (или `pm2 restart sector-backend`). Если второй не 200 — проверьте, что в `sites-enabled` только `sector.moscow.conf` и перезагрузите nginx.
+
+**С вашего компьютера:** откройте в браузере `https://api.sector.moscow/health` — должна открыться JSON-строка `{"ok":true,"mongodb":"connected"}`. Если страница не открывается или предупреждение о сертификате — проблема в сети или SSL для api.sector.moscow. После любых правок CORS или nginx перезапустите бэкенд и выполните `sudo nginx -t && sudo systemctl reload nginx`.
