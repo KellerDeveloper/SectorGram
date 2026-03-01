@@ -1,5 +1,4 @@
-import { Outlet } from "react-router-dom";
-import { NavLink } from "react-router-dom";
+import { Outlet, NavLink, useMatch } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
 import { IconChat, IconCalendar, IconStories, IconProfile } from "./TabIcons";
 import styles from "./MainLayout.module.css";
@@ -12,6 +11,8 @@ const tabs = [
 ] as const;
 
 export function MainLayout() {
+  const isChatRoom = useMatch("/chat/:id");
+
   return (
     <div className={styles.wrapper}>
       <aside className={styles.sidebar} aria-label="Меню">
@@ -32,10 +33,10 @@ export function MainLayout() {
           </NavLink>
         ))}
       </aside>
-      <main className={styles.main}>
+      <main className={`${styles.main} ${isChatRoom ? styles.mainChatOpen : ""}`}>
         <Outlet />
       </main>
-      <div className={styles.bottomNav}>
+      <div className={`${styles.bottomNav} ${isChatRoom ? styles.bottomNavHidden : ""}`}>
         <BottomNav />
       </div>
     </div>
