@@ -113,7 +113,6 @@ function App() {
       setShowCreateForm(false)
       form.reset()
       setPlaceQuery('')
-      setPlaceResults([])
       setSelectedPlace(null)
     } catch (err) {
       if (err instanceof Error) {
