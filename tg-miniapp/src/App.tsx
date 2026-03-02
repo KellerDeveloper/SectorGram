@@ -10,6 +10,13 @@ import { loginWithTelegramWebApp } from './api/auth'
 
 type Filter = 'all' | 'mine'
 
+function getYandexStaticMapUrl(lat: number, lon: number, zoom = 15) {
+  const ll = `${lon},${lat}` // порядок: lon,lat
+  const pt = `${lon},${lat},pm2rdl`
+  const size = '450,240'
+  return `https://static-maps.yandex.ru/1.x/?ll=${ll}&size=${size}&z=${zoom}&l=map&pt=${pt}`
+}
+
 function formatDate(iso: string) {
   const d = new Date(iso)
   return d.toLocaleDateString('ru', {
@@ -46,6 +53,7 @@ function App() {
   const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -364,10 +372,23 @@ function App() {
                   <div className="place-hint">Поиск по карте…</div>
                 )}
                 {selectedPlace && (
-                  <div className="create-place-selected">
-                    Координаты: {selectedPlace.latitude.toFixed(5)},{' '}
-                    {selectedPlace.longitude.toFixed(5)}
-                  </div>
+                  <>
+                    <div className="create-place-selected">
+                      Координаты: {selectedPlace.latitude.toFixed(5)},{' '}
+                      {selectedPlace.longitude.toFixed(5)}
+                    </div>
+                    <div className="create-map-preview">
+                      <img
+                        src={getYandexStaticMapUrl(
+                          selectedPlace.latitude,
+                          selectedPlace.longitude,
+                        )}
+                        alt="Карта выбранного места"
+                        className="map-image"
+                        loading="lazy"
+                      />
+                    </div>
+                  </>
                 )}
               </div>
               <div className="create-form-row">
@@ -411,25 +432,52 @@ function App() {
             {visibleEvents.map((ev) => {
               const going = isParticipant(ev)
               const isBusy = actionEventId === ev.id
+              const isExpanded = expandedEventId === ev.id
 
               return (
                 <li key={ev.id} className="event-card">
-                  <div className="event-header">
-                    <div className="event-title-row">
-                      <h2 className="event-title">{ev.title}</h2>
-                      {going && <span className="event-badge">Иду</span>}
+                  <div
+                    className="event-main-clickable"
+                    onClick={() =>
+                      setExpandedEventId((current) =>
+                        current === ev.id ? null : ev.id,
+                      )
+                    }
+                  >
+                    <div className="event-header">
+                      <div className="event-title-row">
+                        <h2 className="event-title">{ev.title}</h2>
+                        {going && <span className="event-badge">Иду</span>}
+                      </div>
+                      <div className="event-meta">
+                        <span className="event-date">
+                          {formatDate(ev.startsAt)}
+                        </span>
+                        <span className="event-place">{ev.place}</span>
+                      </div>
                     </div>
-                    <div className="event-meta">
-                      <span className="event-date">
-                        {formatDate(ev.startsAt)}
-                      </span>
-                      <span className="event-place">{ev.place}</span>
-                    </div>
-                  </div>
 
-                  {ev.description && (
-                    <p className="event-description">{ev.description}</p>
-                  )}
+                    {ev.description && (
+                      <p className="event-description">{ev.description}</p>
+                    )}
+
+                    {isExpanded &&
+                      ev.location &&
+                      typeof ev.location.latitude === 'number' &&
+                      typeof ev.location.longitude === 'number' && (
+                        <div className="event-map-preview">
+                          <img
+                            src={getYandexStaticMapUrl(
+                              ev.location.latitude,
+                              ev.location.longitude,
+                            )}
+                            alt="Карта места проведения"
+                            className="map-image"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                  </div>
 
                   <div className="event-footer">
                     <span className="event-participants">
