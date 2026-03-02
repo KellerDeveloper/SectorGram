@@ -119,6 +119,104 @@ cd /var/www/sector && git pull
 cd backend && npm ci && pm2 restart sector-backend
 ```
 
+## 5. Telegram mini app (tg-miniapp)
+
+Мини-приложение Telegram живёт в отдельной папке `tg-miniapp` и авторизует пользователя через `Telegram.WebApp.initData`.
+
+### Сборка на сервере
+
+```bash
+ssh root@89.111.143.86
+cd /var/www/sector
+cd tg-miniapp
+# В tg-miniapp нет package-lock.json, поэтому используем обычный install
+npm install
+npm run build
+```
+
+После сборки будет создана папка `dist/`, например `/var/www/sector/tg-miniapp/dist`.
+
+### Публикация мини-приложения
+
+Вариант по умолчанию — отдавать mini app по адресу `https://sector.moscow/tg`:
+
+1. В nginx‑конфиге (`deploy/nginx/sector.moscow.conf`, сервер для `sector.moscow`) добавьте блок:
+
+   ```nginx
+   # Telegram mini app (https://sector.moscow/tg)
+   location /tg/ {
+       alias /var/www/sector/tg-miniapp/dist/;
+       index index.html;
+       try_files $uri $uri/ /tg/index.html;
+   }
+   ```
+
+2. Перезагрузите nginx:
+
+   ```bash
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+3. В `.env` бэкенда (`/var/www/sector/backend/.env`) задайте:
+
+   ```env
+   TELEGRAM_WEBAPP_URL=https://sector.moscow/tg
+   ```
+
+   Это URL, который будет использовать бот в кнопке «Открыть Sector», а mini app — для проверки `initData`.
+
+4. Убедитесь, что webhook бота смотрит на ваш API:
+
+   ```bash
+   curl "https://api.telegram.org/bot<ВАШ_ТОКЕН>/setWebhook?url=https://api.sector.moscow/telegram/webhook"
+   ```
+
+После этого мини‑приложение будет открываться из Telegram и авторизовывать пользователя по его Telegram‑аккаунту.
+
+### Обновление mini app через git
+
+Когда вы меняете код `tg-miniapp` локально и пушите в git:
+
+```bash
+ssh root@89.111.143.86
+cd /var/www/sector
+git pull            # стянуть свежий код, в том числе tg-miniapp
+cd tg-miniapp
+npm install         # при изменении зависимостей
+npm run build       # пересобрать dist/
+```
+
+Если путь в nginx уже настроен на `/var/www/sector/tg-miniapp/dist`, дополнительных действий не нужно — nginx сразу начнёт отдавать новую сборку.
+
+### Как править nginx‑конфиг для mini app
+
+1. **Правка в репозитории (предпочтительно)**  
+   - Локально измените файл `deploy/nginx/sector.moscow.conf` (блок `location /tg/ { ... }`), закоммитьте и запушьте.  
+   - На сервере:
+
+     ```bash
+     ssh root@89.111.143.86
+     cd /var/www/sector
+     git pull
+     sudo cp deploy/nginx/sector.moscow.conf /etc/nginx/sites-available/sector.moscow.conf
+     sudo nginx -t && sudo systemctl reload nginx
+     ```
+
+2. **Быстрая правка только на сервере** (если нужно срочно)  
+   - Откройте конфиг:
+
+     ```bash
+     sudo nano /etc/nginx/sites-available/sector.moscow.conf
+     # или vim, если удобнее
+     ```
+
+   - Отредактируйте блок `location /tg/ { ... }`, сохраните файл.  
+   - Проверьте и примените:
+
+     ```bash
+     sudo nginx -t && sudo systemctl reload nginx
+     ```
+
 ## Порты и домены
 
 | Домен | Назначение |
