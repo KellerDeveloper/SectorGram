@@ -169,7 +169,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header-main">
-          <h1 className="app-title">Мероприятия Sector</h1>
+          <h1 className="app-title">Мероприятия Sector (mini‑app)</h1>
           {user && <div className="app-user">👤 {user.name}</div>}
         </div>
         <p className="app-subtitle">
