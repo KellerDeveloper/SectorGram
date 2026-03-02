@@ -4,6 +4,7 @@ import {
   getEventById,
   joinEvent,
   leaveEvent,
+  cancelEvent,
 } from "../services/eventService.js";
 
 export async function create(req, res, next) {
@@ -73,6 +74,18 @@ export async function leave(req, res, next) {
     const eventId = req.params.id;
 
     const event = await leaveEvent({ eventId, userId });
+    res.json(event);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function cancel(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const eventId = req.params.id;
+
+    const event = await cancelEvent({ eventId, userId });
     res.json(event);
   } catch (error) {
     next(error);

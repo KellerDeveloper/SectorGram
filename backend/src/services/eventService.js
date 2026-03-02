@@ -148,6 +148,34 @@ export async function leaveEvent({ eventId, userId }) {
   return mapEvent(event);
 }
 
+export async function cancelEvent({ eventId, userId }) {
+  const event = await Event.findById(eventId);
+  if (!event) {
+    const error = new Error("Мероприятие не найдено");
+    error.status = 404;
+    throw error;
+  }
+
+  const isCreator = event.creatorId.toString() === userId;
+  if (!isCreator) {
+    const error = new Error("Только создатель может удалить мероприятие");
+    error.status = 403;
+    throw error;
+  }
+
+  if (event.status === "cancelled") {
+    return mapEvent(event);
+  }
+
+  event.status = "cancelled";
+  await event.save();
+
+  await event.populate("creatorId", "name avatar");
+  await event.populate("participants", "name avatar");
+
+  return mapEvent(event);
+}
+
 function mapEvent(eventDoc) {
   const event = eventDoc.toObject();
 

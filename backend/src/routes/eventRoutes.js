@@ -6,6 +6,7 @@ import {
   getOne,
   join,
   leave,
+  cancel,
 } from "../controllers/eventController.js";
 import {
   createEventValidation,
@@ -21,6 +22,7 @@ router.post("/", createEventValidation, create);
 router.get("/:id", eventIdParamValidation, getOne);
 router.post("/:id/join", eventIdParamValidation, join);
 router.post("/:id/leave", eventIdParamValidation, leave);
+router.post("/:id/cancel", eventIdParamValidation, cancel);
 
 export default router;
 

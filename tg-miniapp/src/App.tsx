@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import type { Event } from './api/events'
-import { getEvents, joinEvent, leaveEvent, createEvent } from './api/events'
+import {
+  getEvents,
+  joinEvent,
+  leaveEvent,
+  createEvent,
+  cancelEvent,
+} from './api/events'
 import { searchPlaces, type YandexPlace } from './api/yandex'
 import type { CurrentUser } from './api/users'
 import { getCurrentUser } from './api/users'
@@ -167,6 +173,32 @@ function App() {
       }
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleDeleteEvent(ev: Event) {
+    if (!user) {
+      setError('Нет авторизации. Войдите в Sector в браузере.')
+      return
+    }
+    if (actionEventId) return
+
+    // Лёгкое подтверждение, чтобы не удалить случайно
+    if (!window.confirm('Удалить это мероприятие?')) return
+
+    setActionEventId(ev.id)
+    setError('')
+    try {
+      await cancelEvent(ev.id)
+      setEvents((prev) => prev.filter((e) => e.id !== ev.id))
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Не удалось удалить мероприятие')
+      }
+    } finally {
+      setActionEventId(null)
     }
   }
 
@@ -432,6 +464,7 @@ function App() {
             {visibleEvents.map((ev) => {
               const going = isParticipant(ev)
               const isBusy = actionEventId === ev.id
+              const isCreator = ev.creatorId === user?.id
 
               return (
                 <li key={ev.id} className="event-card">
@@ -477,16 +510,24 @@ function App() {
                     <button
                       type="button"
                       className={`event-action ${
-                        going ? 'event-action--secondary' : 'event-action--primary'
+                        isCreator
+                          ? 'event-action--secondary'
+                          : going
+                            ? 'event-action--secondary'
+                            : 'event-action--primary'
                       }`}
-                      onClick={() => handleToggleParticipation(ev)}
+                      onClick={() =>
+                        isCreator ? handleDeleteEvent(ev) : handleToggleParticipation(ev)
+                      }
                       disabled={isBusy}
                     >
                       {isBusy
                         ? '…'
-                        : going
-                          ? 'Не иду'
-                          : 'Иду'}
+                        : isCreator
+                          ? 'Удалить событие'
+                          : going
+                            ? 'Не иду'
+                            : 'Иду'}
                     </button>
                   </div>
                   {ev.participants && ev.participants.length > 0 && (

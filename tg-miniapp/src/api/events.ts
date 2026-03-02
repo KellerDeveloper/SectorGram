@@ -50,3 +50,8 @@ export async function leaveEvent(id: string): Promise<Event> {
   return api.post<Event>(`/events/${id}/leave`)
 }
 
+export async function cancelEvent(id: string): Promise<Event> {
+  return api.post<Event>(`/events/${id}/cancel`)
+}
+
+
