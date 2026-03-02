@@ -53,7 +53,7 @@ function App() {
   const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
-  const [expandedEventId, setExpandedEventId] = useState<string | null>(null)
+  const [participantsEventId, setParticipantsEventId] = useState<string | null>(null)
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -432,18 +432,10 @@ function App() {
             {visibleEvents.map((ev) => {
               const going = isParticipant(ev)
               const isBusy = actionEventId === ev.id
-              const isExpanded = expandedEventId === ev.id
 
               return (
                 <li key={ev.id} className="event-card">
-                  <div
-                    className="event-main-clickable"
-                    onClick={() =>
-                      setExpandedEventId((current) =>
-                        current === ev.id ? null : ev.id,
-                      )
-                    }
-                  >
+                  <div className="event-main-clickable">
                     <div className="event-header">
                       <div className="event-title-row">
                         <h2 className="event-title">{ev.title}</h2>
@@ -461,8 +453,7 @@ function App() {
                       <p className="event-description">{ev.description}</p>
                     )}
 
-                    {isExpanded &&
-                      ev.location &&
+                    {ev.location &&
                       typeof ev.location.latitude === 'number' &&
                       typeof ev.location.longitude === 'number' && (
                         <div className="event-map-preview">
@@ -498,6 +489,34 @@ function App() {
                           : 'Иду'}
                     </button>
                   </div>
+                  {ev.participants && ev.participants.length > 0 && (
+                    <div className="event-participants-actions">
+                      <button
+                        type="button"
+                        className="event-map-button"
+                        onClick={() =>
+                          setParticipantsEventId((current) =>
+                            current === ev.id ? null : ev.id,
+                          )
+                        }
+                      >
+                        {participantsEventId === ev.id
+                          ? 'Скрыть участников'
+                          : 'Посмотреть участников'}
+                      </button>
+                    </div>
+                  )}
+                  {participantsEventId === ev.id && ev.participants?.length > 0 && (
+                    <ul className="participants-list">
+                      {ev.participants.map((p) => (
+                        <li key={p.id} className="participants-list-item">
+                          <span className="participant-name">
+                            {p.name || 'Без имени'}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   {ev.location &&
                     typeof ev.location.latitude === 'number' &&
                     typeof ev.location.longitude === 'number' && (

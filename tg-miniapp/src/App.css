@@ -328,3 +328,27 @@
   height: auto;
 }
 
+.event-participants-actions {
+  margin-top: 4px;
+}
+
+.participants-list {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+}
+
+.participants-list-item {
+  color: var(--tg-theme-hint-color, #8b8b8f);
+}
+
+.participant-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
