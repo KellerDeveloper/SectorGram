@@ -4,7 +4,7 @@ import type { Event } from './api/events'
 import { getEvents, joinEvent, leaveEvent } from './api/events'
 import type { CurrentUser } from './api/users'
 import { getCurrentUser } from './api/users'
-import { getToken, setToken } from './api/client'
+import { setToken } from './api/client'
 import { loginWithTelegramWebApp } from './api/auth'
 
 type Filter = 'all' | 'mine'
@@ -65,12 +65,13 @@ function App() {
       try {
         let me: CurrentUser | null = null
 
-        // Если есть initData от Telegram и ещё нет токена — пробуем авторизацию через Telegram WebApp
+        // Если есть initData от Telegram — всегда пробуем авторизацию через Telegram WebApp.
+        // Даже если в localStorage уже есть старый токен, он может быть протухшим или не связан с Telegram‑аккаунтом.
         const tg = getTelegramWebApp()
         const hasInitData =
           tg && typeof tg.initData === 'string' && tg.initData.length > 0
 
-        if (hasInitData && !getToken()) {
+        if (hasInitData) {
           try {
             const auth = await loginWithTelegramWebApp(tg.initData as string)
             if (cancelled) return
