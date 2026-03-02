@@ -1,5 +1,3 @@
-import { api } from './client'
-
 export type YandexPlace = {
   label: string
   latitude: number

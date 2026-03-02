@@ -42,7 +42,6 @@ function App() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [creating, setCreating] = useState(false)
   const [placeQuery, setPlaceQuery] = useState('')
-  const [placeResults, setPlaceResults] = useState<YandexPlace[]>([])
   const [placeSearching, setPlaceSearching] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
@@ -133,7 +132,6 @@ function App() {
     setError('')
     try {
       const results = await searchPlaces(placeQuery.trim())
-      setPlaceResults(results)
       if (results[0]) {
         setSelectedPlace(results[0])
       }
