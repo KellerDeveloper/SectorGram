@@ -162,26 +162,6 @@ function App() {
     }
   }
 
-  async function handleSearchPlace() {
-    if (!placeQuery.trim()) return
-    setPlaceSearching(true)
-    setError('')
-    try {
-      const results = await searchPlaces(placeQuery.trim())
-      if (results[0]) {
-        setSelectedPlace(results[0])
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('Не удалось выполнить поиск по карте')
-      }
-    } finally {
-      setPlaceSearching(false)
-    }
-  }
-
   useEffect(() => {
     let cancelled = false
 
