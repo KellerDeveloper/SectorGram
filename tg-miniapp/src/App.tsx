@@ -62,6 +62,44 @@ function App() {
     }
   }, [])
 
+  useEffect(() => {
+    const q = placeQuery.trim()
+    if (q.length < 4) {
+      setPlaceSearching(false)
+      return
+    }
+
+    let cancelled = false
+
+    async function run() {
+      setPlaceSearching(true)
+      try {
+        const results = await searchPlaces(q)
+        if (cancelled) return
+        if (results[0]) {
+          setSelectedPlace(results[0])
+        }
+      } catch (err) {
+        if (cancelled) return
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError('Не удалось выполнить поиск по карте')
+        }
+      } finally {
+        if (!cancelled) {
+          setPlaceSearching(false)
+        }
+      }
+    }
+
+    const timeout = setTimeout(run, 500)
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [placeQuery])
+
   async function handleCreateEvent(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!user) {
@@ -75,11 +113,10 @@ function App() {
     const form = e.currentTarget
     const data = new FormData(form)
     const title = (data.get('title') as string | null)?.trim() ?? ''
-    const placeRaw = (data.get('place') as string | null)?.trim() ?? ''
     const startsAtRaw = (data.get('startsAt') as string | null)?.trim() ?? ''
     const description = (data.get('description') as string | null)?.trim() ?? ''
 
-    const place = placeRaw || selectedPlace?.label || ''
+    const place = placeQuery.trim() || selectedPlace?.label || ''
 
     if (!title || !place || !startsAtRaw) {
       setError('Заполните название, дату/время и место.')
@@ -336,33 +373,20 @@ function App() {
                   className="create-input"
                   type="text"
                   placeholder="Адрес или название площадки"
+                  value={placeQuery}
+                  onChange={(e) => {
+                    setPlaceQuery(e.target.value)
+                    setSelectedPlace(null)
+                  }}
                   required
                 />
-              </div>
-              <div className="create-form-row">
-                <label htmlFor="placeSearch">Поиск по карте (Яндекс)</label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    id="placeSearch"
-                    className="create-input"
-                    type="text"
-                    placeholder="Начните вводить адрес"
-                    value={placeQuery}
-                    onChange={(e) => setPlaceQuery(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="create-submit"
-                    style={{ whiteSpace: 'nowrap' }}
-                    onClick={handleSearchPlace}
-                    disabled={placeSearching}
-                  >
-                    {placeSearching ? 'Поиск…' : 'Найти'}
-                  </button>
-                </div>
+                {placeQuery.trim().length >= 4 && placeSearching && (
+                  <div className="place-hint">Поиск по карте…</div>
+                )}
                 {selectedPlace && (
                   <div className="create-place-selected">
-                    Выбрано: {selectedPlace.label}
+                    Координаты: {selectedPlace.latitude.toFixed(5)},{' '}
+                    {selectedPlace.longitude.toFixed(5)}
                   </div>
                 )}
               </div>
@@ -446,6 +470,36 @@ function App() {
                           : 'Иду'}
                     </button>
                   </div>
+                  {ev.location &&
+                    typeof ev.location.latitude === 'number' &&
+                    typeof ev.location.longitude === 'number' && (
+                      <div className="event-map-actions">
+                        <button
+                          type="button"
+                          className="event-map-button"
+                          onClick={() =>
+                            window.open(
+                              `https://yandex.ru/maps/?rtext=~${ev.location!.latitude},${ev.location!.longitude}`,
+                              '_blank',
+                            )
+                          }
+                        >
+                          Построить маршрут
+                        </button>
+                        <button
+                          type="button"
+                          className="event-map-button"
+                          onClick={() =>
+                            window.open(
+                              `https://yandex.ru/maps/?ll=${ev.location!.longitude},${ev.location!.latitude}&z=16&pt=${ev.location!.longitude},${ev.location!.latitude},pm2rdl`,
+                              '_blank',
+                            )
+                          }
+                        >
+                          Открыть в Яндекс.Картах
+                        </button>
+                      </div>
+                    )}
                 </li>
               )
             })}
