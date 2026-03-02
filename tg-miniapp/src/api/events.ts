@@ -21,8 +21,25 @@ export type Event = {
   updatedAt?: string
 }
 
+export type CreateEventPayload = {
+  title: string
+  place: string
+  startsAt: string
+  endsAt?: string
+  description?: string
+  coverImage?: string
+  location?: {
+    latitude?: number
+    longitude?: number
+  } | null
+}
+
 export async function getEvents(): Promise<Event[]> {
   return api.get<Event[]>('/events')
+}
+
+export async function createEvent(payload: CreateEventPayload): Promise<Event> {
+  return api.post<Event>('/events', payload)
 }
 
 export async function joinEvent(id: string): Promise<Event> {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import type { Event } from './api/events'
-import { getEvents, joinEvent, leaveEvent } from './api/events'
+import { getEvents, joinEvent, leaveEvent, createEvent } from './api/events'
 import type { CurrentUser } from './api/users'
 import { getCurrentUser } from './api/users'
 import { setToken } from './api/client'
@@ -38,7 +38,8 @@ function App() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [debugInfo, setDebugInfo] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
 
@@ -57,6 +58,59 @@ function App() {
     }
   }, [])
 
+  async function handleCreateEvent(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!user) {
+      setError(
+        'Нет авторизации. Войдите в Sector в браузере, чтобы создавать мероприятия.',
+      )
+      return
+    }
+    if (creating) return
+
+    const form = e.currentTarget
+    const data = new FormData(form)
+    const title = (data.get('title') as string | null)?.trim() ?? ''
+    const place = (data.get('place') as string | null)?.trim() ?? ''
+    const startsAtRaw = (data.get('startsAt') as string | null)?.trim() ?? ''
+    const description = (data.get('description') as string | null)?.trim() ?? ''
+
+    if (!title || !place || !startsAtRaw) {
+      setError('Заполните название, дату/время и место.')
+      return
+    }
+
+    let startsAtIso: string
+    try {
+      startsAtIso = new Date(startsAtRaw).toISOString()
+    } catch {
+      setError('Некорректная дата/время начала.')
+      return
+    }
+
+    setCreating(true)
+    setError('')
+    try {
+      const created = await createEvent({
+        title,
+        place,
+        startsAt: startsAtIso,
+        description: description || undefined,
+      })
+      setEvents((prev) => [...prev, created])
+      setShowCreateForm(false)
+      form.reset()
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Не удалось создать мероприятие')
+      }
+    } finally {
+      setCreating(false)
+    }
+  }
+
   useEffect(() => {
     let cancelled = false
 
@@ -69,15 +123,6 @@ function App() {
         const tg = getTelegramWebApp()
         const initData =
           tg && typeof tg.initData === 'string' ? (tg.initData as string) : ''
-
-        // Временная отладка, чтобы понять, что именно видит мини‑приложение внутри Telegram.
-        setDebugInfo(
-          tg
-            ? initData
-              ? `Telegram.WebApp есть, initData length=${initData.length}`
-              : 'Telegram.WebApp есть, но initData пустой'
-            : 'Telegram.WebApp не найден (страница открыта не как mini‑app)',
-        )
 
         // Если mini‑app действительно запущен внутри Telegram, initData будет непустой строкой.
         // В этом случае авторизуемся через Telegram WebApp, игнорируя локальный токен.
@@ -179,17 +224,12 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header-main">
-          <h1 className="app-title">Мероприятия Sector (mini‑app)</h1>
+          <h1 className="app-title">Мероприятия Sector</h1>
           {user && <div className="app-user">👤 {user.name}</div>}
         </div>
         <p className="app-subtitle">
           Отслеживайте предстоящие события и отмечайтесь, где вы участвуете.
         </p>
-        {debugInfo && (
-          <p className="app-subtitle" style={{ fontSize: 12, opacity: 0.7 }}>
-            {debugInfo}
-          </p>
-        )}
         <div className="app-filters">
           <button
             type="button"
@@ -210,12 +250,89 @@ function App() {
             Я иду
           </button>
         </div>
+        {user && (
+          <div style={{ marginTop: 8 }}>
+            <button
+              type="button"
+              className="event-action event-action--primary"
+              onClick={() => setShowCreateForm((v) => !v)}
+            >
+              {showCreateForm ? 'Отменить' : 'Создать мероприятие'}
+            </button>
+          </div>
+        )}
       </header>
 
       <main className="app-main">
         {loading && <div className="state state--muted">Загрузка…</div>}
         {!loading && error && (
           <div className="state state--error">{error}</div>
+        )}
+
+        {!loading && user && showCreateForm && (
+          <section className="create-card">
+            <h2 className="create-card-title">Новое мероприятие</h2>
+            <form className="create-form" onSubmit={handleCreateEvent}>
+              <div className="create-form-row">
+                <label htmlFor="title">Название</label>
+                <input
+                  id="title"
+                  name="title"
+                  className="create-input"
+                  type="text"
+                  placeholder="Например, боулинг"
+                  required
+                />
+              </div>
+              <div className="create-form-row">
+                <label htmlFor="startsAt">Дата и время</label>
+                <input
+                  id="startsAt"
+                  name="startsAt"
+                  className="create-input"
+                  type="datetime-local"
+                  required
+                />
+              </div>
+              <div className="create-form-row">
+                <label htmlFor="place">Место</label>
+                <input
+                  id="place"
+                  name="place"
+                  className="create-input"
+                  type="text"
+                  placeholder="Адрес или название площадки"
+                  required
+                />
+              </div>
+              <div className="create-form-row">
+                <label htmlFor="description">Описание</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  className="create-textarea"
+                  placeholder="Коротко опишите, что будет"
+                />
+              </div>
+              <div className="create-actions">
+                <button
+                  type="button"
+                  className="create-cancel"
+                  onClick={() => setShowCreateForm(false)}
+                  disabled={creating}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="create-submit"
+                  disabled={creating}
+                >
+                  {creating ? 'Создание…' : 'Создать'}
+                </button>
+              </div>
+            </form>
+          </section>
         )}
 
         {!loading && !error && visibleEvents.length === 0 && (
