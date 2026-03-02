@@ -65,15 +65,15 @@ function App() {
       try {
         let me: CurrentUser | null = null
 
-        // Если есть initData от Telegram — всегда пробуем авторизацию через Telegram WebApp.
-        // Даже если в localStorage уже есть старый токен, он может быть протухшим или не связан с Telegram‑аккаунтом.
         const tg = getTelegramWebApp()
-        const hasInitData =
-          tg && typeof tg.initData === 'string' && tg.initData.length > 0
+        const initData =
+          tg && typeof tg.initData === 'string' ? (tg.initData as string) : ''
 
-        if (hasInitData) {
+        // Если mini‑app действительно запущен внутри Telegram, initData будет непустой строкой.
+        // В этом случае авторизуемся через Telegram WebApp, игнорируя локальный токен.
+        if (initData) {
           try {
-            const auth = await loginWithTelegramWebApp(tg.initData as string)
+            const auth = await loginWithTelegramWebApp(initData)
             if (cancelled) return
             setToken(auth.token)
             me = {
