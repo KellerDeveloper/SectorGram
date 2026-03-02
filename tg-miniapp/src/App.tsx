@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import type { Event } from './api/events'
 import { getEvents, joinEvent, leaveEvent, createEvent } from './api/events'
+import { searchPlaces, type YandexPlace } from './api/yandex'
 import type { CurrentUser } from './api/users'
 import { getCurrentUser } from './api/users'
 import { setToken } from './api/client'
@@ -40,6 +41,10 @@ function App() {
   const [error, setError] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [placeQuery, setPlaceQuery] = useState('')
+  const [placeResults, setPlaceResults] = useState<YandexPlace[]>([])
+  const [placeSearching, setPlaceSearching] = useState(false)
+  const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
 
@@ -71,9 +76,11 @@ function App() {
     const form = e.currentTarget
     const data = new FormData(form)
     const title = (data.get('title') as string | null)?.trim() ?? ''
-    const place = (data.get('place') as string | null)?.trim() ?? ''
+    const placeRaw = (data.get('place') as string | null)?.trim() ?? ''
     const startsAtRaw = (data.get('startsAt') as string | null)?.trim() ?? ''
     const description = (data.get('description') as string | null)?.trim() ?? ''
+
+    const place = placeRaw || selectedPlace?.label || ''
 
     if (!title || !place || !startsAtRaw) {
       setError('Заполните название, дату/время и место.')
@@ -96,10 +103,19 @@ function App() {
         place,
         startsAt: startsAtIso,
         description: description || undefined,
+        location: selectedPlace
+          ? {
+              latitude: selectedPlace.latitude,
+              longitude: selectedPlace.longitude,
+            }
+          : undefined,
       })
       setEvents((prev) => [...prev, created])
       setShowCreateForm(false)
       form.reset()
+      setPlaceQuery('')
+      setPlaceResults([])
+      setSelectedPlace(null)
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -108,6 +124,27 @@ function App() {
       }
     } finally {
       setCreating(false)
+    }
+  }
+
+  async function handleSearchPlace() {
+    if (!placeQuery.trim()) return
+    setPlaceSearching(true)
+    setError('')
+    try {
+      const results = await searchPlaces(placeQuery.trim())
+      setPlaceResults(results)
+      if (results[0]) {
+        setSelectedPlace(results[0])
+      }
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Не удалось выполнить поиск по карте')
+      }
+    } finally {
+      setPlaceSearching(false)
     }
   }
 
@@ -304,6 +341,33 @@ function App() {
                   placeholder="Адрес или название площадки"
                   required
                 />
+              </div>
+              <div className="create-form-row">
+                <label htmlFor="placeSearch">Поиск по карте (Яндекс)</label>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    id="placeSearch"
+                    className="create-input"
+                    type="text"
+                    placeholder="Начните вводить адрес"
+                    value={placeQuery}
+                    onChange={(e) => setPlaceQuery(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="create-submit"
+                    style={{ whiteSpace: 'nowrap' }}
+                    onClick={handleSearchPlace}
+                    disabled={placeSearching}
+                  >
+                    {placeSearching ? 'Поиск…' : 'Найти'}
+                  </button>
+                </div>
+                {selectedPlace && (
+                  <div className="create-place-selected">
+                    Выбрано: {selectedPlace.label}
+                  </div>
+                )}
               </div>
               <div className="create-form-row">
                 <label htmlFor="description">Описание</label>
