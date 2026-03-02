@@ -25,7 +25,26 @@ export async function searchPlaces(query: string): Promise<YandexPlace[]> {
     `https://geocode-maps.yandex.ru/1.x/?${params.toString()}`,
   )
   if (!res.ok) {
-    throw new Error('Ошибка запроса к Яндекс.Картам')
+    const status = res.status
+    const text = await res.text().catch(() => '')
+
+    let message = `Ошибка Яндекс.Карт (HTTP ${status})`
+    try {
+      const data = text ? (JSON.parse(text) as any) : null
+      const apiMessage =
+        data?.message || data?.error || data?.description || data?.detail
+      if (apiMessage && typeof apiMessage === 'string') {
+        message += `: ${apiMessage}`
+      }
+    } catch {
+      // ignore JSON parse error
+    }
+
+    // Дополнительный лог в консоль, чтобы можно было посмотреть сырой ответ.
+    // В проде это просто появится в DevTools, на бэкенд ничего не уходит.
+    console.error('Yandex geocode error', status, text)
+
+    throw new Error(message)
   }
 
   const data = (await res.json()) as any
