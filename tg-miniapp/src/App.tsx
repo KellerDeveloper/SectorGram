@@ -38,6 +38,7 @@ function App() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [debugInfo, setDebugInfo] = useState('')
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
 
@@ -68,6 +69,15 @@ function App() {
         const tg = getTelegramWebApp()
         const initData =
           tg && typeof tg.initData === 'string' ? (tg.initData as string) : ''
+
+        // Временная отладка, чтобы понять, что именно видит мини‑приложение внутри Telegram.
+        setDebugInfo(
+          tg
+            ? initData
+              ? `Telegram.WebApp есть, initData length=${initData.length}`
+              : 'Telegram.WebApp есть, но initData пустой'
+            : 'Telegram.WebApp не найден (страница открыта не как mini‑app)',
+        )
 
         // Если mini‑app действительно запущен внутри Telegram, initData будет непустой строкой.
         // В этом случае авторизуемся через Telegram WebApp, игнорируя локальный токен.
@@ -175,6 +185,11 @@ function App() {
         <p className="app-subtitle">
           Отслеживайте предстоящие события и отмечайтесь, где вы участвуете.
         </p>
+        {debugInfo && (
+          <p className="app-subtitle" style={{ fontSize: 12, opacity: 0.7 }}>
+            {debugInfo}
+          </p>
+        )}
         <div className="app-filters">
           <button
             type="button"
