@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
+import telegramRoutes from "./routes/telegramRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import storyRoutes from "./routes/storyRoutes.js";
@@ -49,6 +50,7 @@ export function createApp() {
   // HTTP-роуты
   app.use("/auth", authRoutes);
   app.use("/chats", chatRoutes);
+  app.use("/telegram", telegramRoutes);
   app.use("/users", userRoutes);
   app.use("/notifications", notificationRoutes);
   app.use("/stories", storyRoutes);

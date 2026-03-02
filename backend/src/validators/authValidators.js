@@ -41,3 +41,26 @@ export const googleAuthValidation = [
   handleValidationErrors,
 ];
 
+export const telegramWebAppValidation = [
+  body("initData")
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage("initData должен быть непустой строкой"),
+  body("init_data")
+    .optional()
+    .isString()
+    .notEmpty()
+    .withMessage("init_data должен быть непустой строкой"),
+  body().custom((value, { req }) => {
+    const initData = req.body?.initData || req.body?.init_data;
+    if (!initData) {
+      throw new Error(
+        "В теле запроса нужен initData или init_data (строка из window.Telegram.WebApp.initData)"
+      );
+    }
+    return true;
+  }),
+  handleValidationErrors,
+];
+

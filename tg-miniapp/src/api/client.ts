@@ -10,6 +10,14 @@ export function getToken(): string | null {
   return localStorage.getItem('sector_token')
 }
 
+export function setToken(token: string) {
+  localStorage.setItem('sector_token', token)
+}
+
+export function clearToken() {
+  localStorage.removeItem('sector_token')
+}
+
 export async function request<T>(
   path: string,
   options: RequestInit = {},

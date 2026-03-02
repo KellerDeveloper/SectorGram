@@ -1,42 +1,202 @@
-#root {
-  max-width: 1280px;
+.app {
+  min-height: 100vh;
+  max-width: 480px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 12px 12px 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: var(--tg-theme-bg-color, #0f1115);
+  color: var(--tg-theme-text-color, #ffffff);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text',
+    'Roboto', sans-serif;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.app-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.app-header-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.app-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.card {
-  padding: 2em;
+.app-user {
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-.read-the-docs {
-  color: #888;
+.app-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
 }
+
+.app-filters {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  border-radius: 999px;
+  background-color: var(--tg-theme-secondary-bg-color, #181b20);
+  gap: 2px;
+}
+
+.filter-button {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
+}
+
+.filter-button--active {
+  background-color: var(--tg-theme-button-color, #2ea6ff);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.state {
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
+}
+
+.state--muted {
+  color: var(--tg-theme-hint-color, #8b8b8f);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.state--error {
+  color: #ff7676;
+  background-color: rgba(255, 118, 118, 0.08);
+}
+
+.events-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.event-card {
+  border-radius: 14px;
+  padding: 10px 12px;
+  background-color: var(--tg-theme-secondary-bg-color, #181b20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.event-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.event-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(46, 166, 255, 0.1);
+  color: var(--tg-theme-button-color, #2ea6ff);
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
+}
+
+.event-date::before {
+  content: '🕒 ';
+}
+
+.event-place::before {
+  content: '📍 ';
+}
+
+.event-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tg-theme-text-color, #ffffff);
+  opacity: 0.9;
+}
+
+.event-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.event-participants {
+  font-size: 12px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
+}
+
+.event-action {
+  border-radius: 999px;
+  border: none;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 90px;
+}
+
+.event-action--primary {
+  background-color: var(--tg-theme-button-color, #2ea6ff);
+  color: var(--tg-theme-button-text-color, #ffffff);
+}
+
+.event-action--secondary {
+  background-color: transparent;
+  color: var(--tg-theme-destructive-text-color, #ff7676);
+  border: 1px solid rgba(255, 118, 118, 0.6);
+}
+
+.event-action:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+

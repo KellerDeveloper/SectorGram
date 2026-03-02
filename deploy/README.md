@@ -14,6 +14,7 @@
 На сервере:
 
 ```bash
+ssh root@89.111.143.86
 cd /var/www/sector   # или ваш путь к репозиторию
 cd sector-web
 npm ci
@@ -25,6 +26,7 @@ npm run build
 ## 2. Бэкенд
 
 ```bash
+ssh root@89.111.143.86
 cd /var/www/sector/backend
 cp .env.example .env
 # Отредактировать .env: MONGODB_URI, JWT_SECRET, PORT=4000, CORS_ORIGIN

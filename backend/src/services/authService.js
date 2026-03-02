@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
+import { validateTelegramWebAppInitData } from "./telegramService.js";
 
 const { JWT_SECRET, GOOGLE_CLIENT_ID } = process.env;
 
@@ -151,4 +152,84 @@ export async function loginOrRegisterWithGoogle(idToken) {
     },
   };
 }
+
+/**
+ * Вход/регистрация через Telegram WebApp.
+ * Клиент (мини-приложение) передаёт initData = window.Telegram.WebApp.initData.
+ */
+export async function loginOrRegisterWithTelegramWebApp(initData) {
+  if (!initData || typeof initData !== "string") {
+    const error = new Error("initData обязателен");
+    error.status = 400;
+    throw error;
+  }
+
+  const parsed = validateTelegramWebAppInitData(initData);
+  const tgUser = parsed?.user;
+
+  if (!tgUser || !tgUser.id) {
+    const error = new Error("Невалидные данные Telegram WebApp");
+    error.status = 401;
+    throw error;
+  }
+
+  const telegramId = String(tgUser.id);
+
+  let user = await User.findOne({ telegramId });
+
+  if (!user) {
+    const firstName = tgUser.first_name || "";
+    const lastName = tgUser.last_name || "";
+    const username = tgUser.username || "";
+    const displayName =
+      (firstName + " " + lastName).trim() ||
+      username ||
+      `Telegram user ${telegramId}`;
+
+    const pseudoEmail = `tg-${telegramId}@telegram.local`;
+
+    user = new User({
+      email: pseudoEmail.toLowerCase(),
+      name: displayName,
+      username: username ? String(username).trim().toLowerCase() : undefined,
+      avatar: tgUser.photo_url || undefined,
+      telegramId,
+      passwordHash: null,
+    });
+
+    await user.save();
+  } else {
+    let changed = false;
+
+    if (tgUser.username) {
+      const normalizedUsername = String(tgUser.username).trim().toLowerCase();
+      if (normalizedUsername && normalizedUsername !== user.username) {
+        user.username = normalizedUsername;
+        changed = true;
+      }
+    }
+
+    if (tgUser.photo_url && tgUser.photo_url !== user.avatar) {
+      user.avatar = tgUser.photo_url;
+      changed = true;
+    }
+
+    if (changed) {
+      await user.save();
+    }
+  }
+
+  const token = generateToken(user);
+
+  return {
+    token,
+    user: {
+      id: user._id.toString(),
+      email: user.email,
+      name: user.name,
+      avatar: user.avatar,
+    },
+  };
+}
+
 

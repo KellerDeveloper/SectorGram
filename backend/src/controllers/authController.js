@@ -1,4 +1,9 @@
-import { registerUser, loginUser, loginOrRegisterWithGoogle } from "../services/authService.js";
+import {
+  registerUser,
+  loginUser,
+  loginOrRegisterWithGoogle,
+  loginOrRegisterWithTelegramWebApp,
+} from "../services/authService.js";
 
 export async function register(req, res, next) {
   try {
@@ -32,4 +37,16 @@ export async function googleAuth(req, res, next) {
     next(error);
   }
 }
+
+export async function telegramWebAppAuth(req, res, next) {
+  try {
+    const initData = req.body?.initData || req.body?.init_data || "";
+    const result = await loginOrRegisterWithTelegramWebApp(initData);
+    res.json(result);
+  } catch (error) {
+    console.error("Ошибка входа через Telegram WebApp:", error);
+    next(error);
+  }
+}
+
 

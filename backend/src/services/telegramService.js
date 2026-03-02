@@ -1,3 +1,5 @@
+import crypto from "crypto";
+
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
 
 const TELEGRAM_API_BASE = TELEGRAM_BOT_TOKEN
@@ -36,6 +38,75 @@ async function callTelegramApi(method, payload) {
     console.error("Telegram API request failed:", error);
     return null;
   }
+}
+
+/**
+ * Проверка initData из Telegram WebApp согласно документации:
+ * https://core.telegram.org/bots/webapps#validating-data-received-via-the-web-app
+ */
+export function validateTelegramWebAppInitData(initData) {
+  if (!initData || typeof initData !== "string") {
+    return null;
+  }
+
+  if (!TELEGRAM_BOT_TOKEN) {
+    console.error(
+      "Telegram WebApp auth skipped: TELEGRAM_BOT_TOKEN is not configured."
+    );
+    return null;
+  }
+
+  const params = new URLSearchParams(initData);
+  const hash = params.get("hash");
+
+  if (!hash) {
+    console.error("Telegram WebApp auth error: hash is missing");
+    return null;
+  }
+
+  const dataCheckArr = [];
+  for (const [key, value] of params.entries()) {
+    if (key === "hash") continue;
+    dataCheckArr.push(`${key}=${value}`);
+  }
+  dataCheckArr.sort();
+
+  const dataCheckString = dataCheckArr.join("\n");
+
+  const secretKey = crypto
+    .createHmac("sha256", "WebAppData")
+    .update(TELEGRAM_BOT_TOKEN)
+    .digest();
+
+  const computedHash = crypto
+    .createHmac("sha256", secretKey)
+    .update(dataCheckString)
+    .digest("hex");
+
+  if (computedHash !== hash) {
+    console.error("Telegram WebApp auth error: hash mismatch");
+    return null;
+  }
+
+  const userJson = params.get("user");
+  let user = null;
+  if (userJson) {
+    try {
+      user = JSON.parse(userJson);
+    } catch (e) {
+      console.error("Telegram WebApp auth error: failed to parse user JSON");
+      return null;
+    }
+  }
+
+  const authDate = Number(params.get("auth_date") || "0");
+
+  return {
+    user,
+    queryId: params.get("query_id") || null,
+    authDate,
+    raw: initData,
+  };
 }
 
 export async function sendTelegramMessage(chatId, text, extra = {}) {
