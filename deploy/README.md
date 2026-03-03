@@ -104,6 +104,31 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ## 4. Обновление
 
+### Вариант 1. Один скрипт для всего стека (рекомендуется)
+
+В репозитории есть скрипт `deploy/update-prod.sh`, который:
+
+- делает `git fetch` и `git pull --ff-only` в корне проекта;
+- собирает фронтенд (`sector-web`): `npm ci && npm run build`;
+- собирает Telegram mini app (`tg-miniapp`): `npm install && npm run build`;
+- обновляет зависимости и перезапускает backend через PM2 (`sector-backend`).
+
+**Первый запуск (сделать исполняемым):**
+
+```bash
+cd /var/www/sector
+chmod +x deploy/update-prod.sh
+```
+
+**Каждый последующий деплой:**
+
+```bash
+cd /var/www/sector
+./deploy/update-prod.sh
+```
+
+### Вариант 2. Ручное обновление (по шагам)
+
 **Фронт:**
 
 ```bash
