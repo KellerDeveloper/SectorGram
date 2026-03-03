@@ -56,6 +56,7 @@ function App() {
   const [creating, setCreating] = useState(false)
   const [placeQuery, setPlaceQuery] = useState('')
   const [placeSearching, setPlaceSearching] = useState(false)
+  const [placeResults, setPlaceResults] = useState<YandexPlace[]>([])
   const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
@@ -80,6 +81,7 @@ function App() {
     const q = placeQuery.trim()
     if (q.length < 4) {
       setPlaceSearching(false)
+      setPlaceResults([])
       return
     }
 
@@ -90,9 +92,7 @@ function App() {
       try {
         const results = await searchPlaces(q)
         if (cancelled) return
-        if (results[0]) {
-          setSelectedPlace(results[0])
-        }
+        setPlaceResults(results)
       } catch (err) {
         if (cancelled) return
         if (err instanceof Error) {
@@ -397,9 +397,31 @@ function App() {
                   onChange={(e) => {
                     setPlaceQuery(e.target.value)
                     setSelectedPlace(null)
+                setPlaceResults([])
                   }}
                   required
                 />
+            {placeQuery.trim().length >= 4 &&
+              !placeSearching &&
+              placeResults.length > 0 && (
+                <ul className="place-suggestions">
+                  {placeResults.map((place, index) => (
+                    <li key={`${place.latitude}-${place.longitude}-${index}`}>
+                      <button
+                        type="button"
+                        className="place-suggestion"
+                        onClick={() => {
+                          setPlaceQuery(place.label)
+                          setSelectedPlace(place)
+                          setPlaceResults([])
+                        }}
+                      >
+                        {place.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
                 {placeQuery.trim().length >= 4 && placeSearching && (
                   <div className="place-hint">Поиск по карте…</div>
                 )}

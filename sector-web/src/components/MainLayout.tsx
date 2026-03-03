@@ -1,14 +1,9 @@
 import { Outlet, NavLink, useMatch } from "react-router-dom";
 import { BottomNav } from "./BottomNav";
-import { IconChat, IconCalendar, IconStories, IconProfile } from "./TabIcons";
+import { IconCalendar } from "./TabIcons";
 import styles from "./MainLayout.module.css";
 
-const tabs = [
-  { to: "/", label: "Чаты", Icon: IconChat },
-  { to: "/events", label: "События", Icon: IconCalendar },
-  { to: "/stories", label: "Истории", Icon: IconStories },
-  { to: "/profile", label: "Профиль", Icon: IconProfile },
-] as const;
+const tabs = [{ to: "/events", label: "События", Icon: IconCalendar }] as const;
 
 export function MainLayout() {
   const isChatRoom = useMatch("/chat/:id");

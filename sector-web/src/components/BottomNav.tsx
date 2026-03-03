@@ -1,13 +1,8 @@
 import { NavLink } from "react-router-dom";
-import { IconChat, IconCalendar, IconStories, IconProfile } from "./TabIcons";
+import { IconCalendar } from "./TabIcons";
 import styles from "./BottomNav.module.css";
 
-const tabs = [
-  { to: "/", label: "Чаты", Icon: IconChat },
-  { to: "/events", label: "События", Icon: IconCalendar },
-  { to: "/stories", label: "Истории", Icon: IconStories },
-  { to: "/profile", label: "Профиль", Icon: IconProfile },
-] as const;
+const tabs = [{ to: "/events", label: "События", Icon: IconCalendar }] as const;
 
 export function BottomNav() {
   return (

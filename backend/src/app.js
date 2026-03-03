@@ -9,7 +9,6 @@ import chatRoutes from "./routes/chatRoutes.js";
 import telegramRoutes from "./routes/telegramRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-import storyRoutes from "./routes/storyRoutes.js";
 import mediaRoutes from "./routes/mediaRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -53,7 +52,6 @@ export function createApp() {
   app.use("/telegram", telegramRoutes);
   app.use("/users", userRoutes);
   app.use("/notifications", notificationRoutes);
-  app.use("/stories", storyRoutes);
   app.use("/media", mediaRoutes);
   app.use("/events", eventRoutes);
 
