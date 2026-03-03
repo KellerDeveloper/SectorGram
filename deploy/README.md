@@ -1,6 +1,6 @@
-# Деплой sector.moscow
+# Деплой sektor.moscow
 
-Настройка nginx для раздачи фронта (sector.moscow, www) и проксирования API и Socket.io (api.sector.moscow) на Node.js бэкенд.
+Настройка nginx для раздачи фронта (sektor.moscow, www) и проксирования API и Socket.io (api.sektor.moscow) на Node.js бэкенд.
 
 ## Требования на сервере
 
@@ -51,7 +51,7 @@ sudo cp deploy/nginx/sector.moscow.conf /etc/nginx/sites-available/sector.moscow
 
 Если папки `deploy/` на сервере ещё нет — закоммитьте и запушьте её с машины разработки, затем на сервере `git pull`.
 
-Если фронт лежит не в `/var/www/sector/sector-web/dist`, отредактируйте в конфиге директиву `root` в блоке `server` для sector.moscow (строка с `root /var/www/sector/sector-web/dist;`).
+Если фронт лежит не в `/var/www/sector/sector-web/dist`, отредактируйте в конфиге директиву `root` в блоке `server` для sektor.moscow (строка с `root /var/www/sector/sector-web/dist;`).
 
 Включите сайт и проверьте конфиг:
 
@@ -67,7 +67,7 @@ sudo nginx -t
 ```bash
 ls -la /etc/nginx/sites-enabled/
 ```
-Удалите симлинк на старый конфиг (например `default` или конфиг, который правил certbot), чтобы для sector.moscow, www и api использовался только `sector.moscow.conf`:
+Удалите симлинк на старый конфиг (например `default` или конфиг, который правил certbot), чтобы для sektor.moscow, www и api использовался только `sector.moscow.conf`:
 ```bash
 sudo rm /etc/nginx/sites-enabled/default
 # или другой файл, где были прописаны эти домены
@@ -76,21 +76,21 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ### SSL (Let's Encrypt)
 
-Сначала убедитесь, что DNS для `sector.moscow`, `www.sector.moscow` и **`api.sector.moscow`** указывает на IP сервера. Затем **обязательно** укажите все три домена:
+Сначала убедитесь, что DNS для `sektor.moscow`, `www.sektor.moscow` и **`api.sektor.moscow`** указывает на IP сервера. Затем **обязательно** укажите все три домена:
 
 ```bash
-sudo certbot --nginx -d sector.moscow -d www.sector.moscow -d api.sector.moscow
+sudo certbot --nginx -d sektor.moscow -d www.sektor.moscow -d api.sektor.moscow
 ```
 
 Если сертификат был получен без `api.sector.moscow`, браузер и curl будут выдавать ошибку вида «subjectAltName does not match host name api.sector.moscow» и запросы к API будут падать. Добавить домен в существующий сертификат:
 
 ```bash
-sudo certbot --nginx -d sector.moscow -d www.sector.moscow -d api.sector.moscow --expand
+sudo certbot --nginx -d sektor.moscow -d www.sektor.moscow -d api.sektor.moscow --expand
 ```
 
 После этого перезагрузите nginx: `sudo nginx -t && sudo systemctl reload nginx`.
 
-Certbot сам добавит SSL в конфиг. Если вы уже скопировали конфиг из репозитория с путями к сертификатам, после certbot пути будут вида `/etc/letsencrypt/live/sector.moscow/...` — они уже прописаны в `sector.moscow.conf`.
+Certbot сам добавит SSL в конфиг. Если вы уже скопировали конфиг из репозитория с путями к сертификатам, после certbot пути будут вида `/etc/letsencrypt/live/sektor.moscow/...` — они уже прописаны в `sector.moscow.conf`.
 
 Если подключаете конфиг **до** получения сертификатов, временно закомментируйте блоки `server { listen 443 ... }` и оставьте только `listen 80`, затем запустите certbot — он создаст SSL-блоки сам. После этого можно заменить конфиг на версию из репо с поддержкой 80→301 и 443.
 
@@ -138,12 +138,12 @@ npm run build
 
 ### Публикация мини-приложения
 
-Вариант по умолчанию — отдавать mini app по адресу `https://sector.moscow/tg`:
+Вариант по умолчанию — отдавать mini app по адресу `https://sektor.moscow/tg`:
 
-1. В nginx‑конфиге (`deploy/nginx/sector.moscow.conf`, сервер для `sector.moscow`) добавьте блок:
+1. В nginx‑конфиге (`deploy/nginx/sector.moscow.conf`, сервер для `sektor.moscow`) добавьте блок:
 
    ```nginx
-   # Telegram mini app (https://sector.moscow/tg)
+   # Telegram mini app (https://sektor.moscow/tg)
    location /tg/ {
        alias /var/www/sector/tg-miniapp/dist/;
        index index.html;
@@ -160,7 +160,7 @@ npm run build
 3. В `.env` бэкенда (`/var/www/sector/backend/.env`) задайте:
 
    ```env
-   TELEGRAM_WEBAPP_URL=https://sector.moscow/tg
+   TELEGRAM_WEBAPP_URL=https://sektor.moscow/tg
    ```
 
    Это URL, который будет использовать бот в кнопке «Открыть Sector», а mini app — для проверки `initData`.
@@ -168,7 +168,7 @@ npm run build
 4. Убедитесь, что webhook бота смотрит на ваш API:
 
    ```bash
-   curl "https://api.telegram.org/bot<ВАШ_ТОКЕН>/setWebhook?url=https://api.sector.moscow/telegram/webhook"
+   curl "https://api.telegram.org/bot<ВАШ_ТОКЕН>/setWebhook?url=https://api.sektor.moscow/telegram/webhook"
    ```
 
 После этого мини‑приложение будет открываться из Telegram и авторизовывать пользователя по его Telegram‑аккаунту.
@@ -191,7 +191,7 @@ npm run build       # пересобрать dist/
 ### Как править nginx‑конфиг для mini app
 
 1. **Правка в репозитории (предпочтительно)**  
-   - Локально измените файл `deploy/nginx/sector.moscow.conf` (блок `location /tg/ { ... }`), закоммитьте и запушьте.  
+   - Локально измените файл `deploy/nginx/sector.moscow.conf` (блок `location /tg/ { ... }`), закоммитьте и запушьте.
    - На сервере:
 
      ```bash
@@ -221,10 +221,10 @@ npm run build       # пересобрать dist/
 
 | Домен | Назначение |
 |-------|------------|
-| sector.moscow, www.sector.moscow | Статика из `sector-web/dist` (SPA) |
-| api.sector.moscow | Прокси на `http://127.0.0.1:4000` (API + Socket.io) |
+| sektor.moscow, www.sektor.moscow | Статика из `sector-web/dist` (SPA) |
+| api.sektor.moscow | Прокси на `http://127.0.0.1:4000` (API + Socket.io) |
 
-CORS в бэкенде разрешает `http` и `https` для `sector.moscow` и `www.sector.moscow`; для preflight (OPTIONS) явно заданы методы и заголовки (`Content-Type`, `Authorization`).
+CORS в бэкенде разрешает `http` и `https` для `sektor.moscow` и `www.sektor.moscow`; для preflight (OPTIONS) явно заданы методы и заголовки (`Content-Type`, `Authorization`).
 
 ## Проверка после деплоя
 
@@ -236,13 +236,13 @@ curl -s http://127.0.0.1:4000/health
 # Ожидается: {"ok":true,"mongodb":"connected"} и HTTP 200
 
 # Nginx проксирует api.sector.moscow на бэкенд?
-curl -s -o /dev/null -w "%{http_code}" https://api.sector.moscow/health
+curl -s -o /dev/null -w "%{http_code}" https://api.sektor.moscow/health
 # Ожидается: 200
 
 # Preflight CORS (OPTIONS) отвечает 204?
 # Если вывод пустой — проверьте с -v (verbose) и убедитесь, что бэкенд запущен.
-curl -s -i -X OPTIONS --http1.1 "https://api.sector.moscow/auth/login" \
-  -H "Origin: https://sector.moscow" \
+curl -s -i -X OPTIONS --http1.1 "https://api.sektor.moscow/auth/login" \
+  -H "Origin: https://sektor.moscow" \
   -H "Access-Control-Request-Method: POST" \
   -H "Access-Control-Request-Headers: content-type"
 # Ожидается первая строка: HTTP/1.1 204 No Content и заголовок Access-Control-Allow-Origin.
@@ -253,14 +253,14 @@ ls -la /etc/nginx/sites-enabled/
 
 Если первый `curl` не даёт 200 — запустите бэкенд: `cd /var/www/sector/backend && pm2 start ecosystem.config.cjs` (или `pm2 restart sector-backend`). Если второй не 200 — проверьте, что в `sites-enabled` только `sector.moscow.conf` и перезагрузите nginx.
 
-**С вашего компьютера:** откройте в браузере `https://api.sector.moscow/health` — должна открыться JSON-строка `{"ok":true,"mongodb":"connected"}`. Если страница не открывается или предупреждение о сертификате — проблема в сети или SSL для api.sector.moscow. После любых правок CORS или nginx перезапустите бэкенд и выполните `sudo nginx -t && sudo systemctl reload nginx`.
+**С вашего компьютера:** откройте в браузере `https://api.sektor.moscow/health` — должна открыться JSON-строка `{"ok":true,"mongodb":"connected"}`. Если страница не открывается или предупреждение о сертификате — проблема в сети или SSL для api.sektor.moscow. После любых правок CORS или nginx перезапустите бэкенд и выполните `sudo nginx -t && sudo systemctl reload nginx`.
 
 ### WebSocket (Socket.IO) не подключается
 
-Если в консоли браузера ошибки вида «WebSocket connection to 'wss://sector.moscow/socket.io/...' failed»:
+Если в консоли браузера ошибки вида «WebSocket connection to 'wss://sektor.moscow/socket.io/...' failed»:
 
-1. **Прокси на том же домене:** в конфиге nginx для `sector.moscow` должен быть блок `location /socket.io/` с проксированием на `http://127.0.0.1:4000` и заголовками `Upgrade`/`Connection` (в `deploy/nginx/sector.moscow.conf` он уже есть). После правок: `sudo nginx -t && sudo systemctl reload nginx`.
+1. **Прокси на том же домене:** в конфиге nginx для `sektor.moscow` должен быть блок `location /socket.io/` с проксированием на `http://127.0.0.1:4000` и заголовками `Upgrade`/`Connection` (в `deploy/nginx/sector.moscow.conf` он уже есть). После правок: `sudo nginx -t && sudo systemctl reload nginx`.
 
-2. **Сборка с правильным API:** при сборке фронта должен подхватываться `VITE_API_URL` из `.env.production` (например `https://api.sector.moscow`). Тогда сокет будет подключаться к `api.sector.moscow`. Если переменная не задана, клиент использует текущий хост (`sector.moscow`), поэтому важен пункт 1.
+2. **Сборка с правильным API:** при сборке фронта должен подхватываться `VITE_API_URL` из `.env.production` (например `https://api.sektor.moscow`). Тогда сокет будет подключаться к `api.sektor.moscow`. Если переменная не задана, клиент использует текущий хост (`sektor.moscow`), поэтому важен пункт 1.
 
 3. Убедитесь, что бэкенд запущен (`pm2 list`, при необходимости `pm2 restart sector-backend`).

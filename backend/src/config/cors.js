@@ -2,11 +2,11 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:19006",
   "http://localhost:8081",
-  "http://sector.moscow",
-  "http://www.sector.moscow",
-  "https://sector.moscow",
-  "https://www.sector.moscow",
-  "https://api.sector.moscow",
+  "http://sektor.moscow",
+  "http://www.sektor.moscow",
+  "https://sektor.moscow",
+  "https://www.sektor.moscow",
+  "https://api.sektor.moscow",
 ];
 
 function splitOrigins(rawOrigins) {

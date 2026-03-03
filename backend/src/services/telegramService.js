@@ -137,7 +137,7 @@ export async function handleTelegramUpdate(update) {
 
   if (lowerText.startsWith("/start")) {
     const webAppUrl =
-      TELEGRAM_WEBAPP_URL?.trim() || "https://sector.moscow";
+      TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
 
     const welcomeText =
       "Привет! 👋\n\n" +
