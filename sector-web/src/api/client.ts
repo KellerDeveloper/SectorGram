@@ -5,15 +5,15 @@ export const API_BASE =
     : "/api";
 
 export function getToken(): string | null {
-  return localStorage.getItem("sector_token");
+  return localStorage.getItem("sektor_token");
 }
 
 export function setToken(token: string) {
-  localStorage.setItem("sector_token", token);
+  localStorage.setItem("sektor_token", token);
 }
 
 export function clearToken() {
-  localStorage.removeItem("sector_token");
+  localStorage.removeItem("sektor_token");
 }
 
 export type ApiError = { error?: string; message?: string };

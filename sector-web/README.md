@@ -1,6 +1,6 @@
-# Sector — веб-версия мессенджера
+# Sektor — веб-версия мессенджера
 
-Веб-клиент для [Sector API](../README.md): React + TypeScript + Vite, авторизация по JWT, чаты и сообщения в реальном времени через Socket.io.
+Веб-клиент для [Sektor API](../README.md): React + TypeScript + Vite, авторизация по JWT, чаты и сообщения в реальном времени через Socket.io.
 
 ## Требования
 

@@ -1,4 +1,4 @@
-# Sector — Backend API (Realtime мессенджер)
+# Sektor — Backend API (Realtime мессенджер)
 
 Backend на Node.js/Express + Socket.io + MongoDB: JWT-аутентификация, чаты, сообщения в реальном времени, онлайн-статус, истории.
 

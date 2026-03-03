@@ -118,7 +118,7 @@ function App() {
     e.preventDefault()
     if (!user) {
       setError(
-        'Нет авторизации. Войдите в Sector в браузере, чтобы создавать мероприятия.',
+        'Нет авторизации. Войдите в Sektor в браузере, чтобы создавать мероприятия.',
       )
       return
     }
@@ -178,7 +178,7 @@ function App() {
 
   async function handleDeleteEvent(ev: Event) {
     if (!user) {
-      setError('Нет авторизации. Войдите в Sector в браузере.')
+      setError('Нет авторизации. Войдите в Sektor в браузере.')
       return
     }
     if (actionEventId) return
@@ -244,7 +244,7 @@ function App() {
         if (cancelled) return
         if (err instanceof Error && (err as Error & { status?: number }).status === 401) {
           setError(
-            'Нет авторизации. Откройте мини‑приложение из Telegram или войдите в Sector в браузере.',
+            'Нет авторизации. Откройте мини‑приложение из Telegram или войдите в Sektor в браузере.',
           )
         } else if (err instanceof Error) {
           setError(err.message)
@@ -285,7 +285,7 @@ function App() {
   async function handleToggleParticipation(ev: Event) {
     if (!user) {
       setError(
-        'Нет авторизации. Войдите в Sector в браузере, чтобы отмечаться на событиях.',
+        'Нет авторизации. Войдите в Sektor в браузере, чтобы отмечаться на событиях.',
       )
       return
     }
@@ -315,7 +315,7 @@ function App() {
     <div className="app">
       <header className="app-header">
         <div className="app-header-main">
-          <h1 className="app-title">Мероприятия Sector</h1>
+          <h1 className="app-title">Мероприятия Sektor</h1>
           {user && <div className="app-user">👤 {user.name}</div>}
         </div>
         <p className="app-subtitle">

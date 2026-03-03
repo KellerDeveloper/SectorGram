@@ -141,14 +141,14 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта Sector. Нажми кнопку ниже, чтобы открыть мини‑приложение.";
+      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть мини‑приложение.";
 
     await sendTelegramMessage(chatId, welcomeText, {
       reply_markup: {
         inline_keyboard: [
           [
             {
-              text: "Открыть Sector",
+              text: "Открыть Sektor",
               web_app: {
                 url: webAppUrl,
               },
