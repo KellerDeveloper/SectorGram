@@ -18,7 +18,7 @@ export function MainLayout() {
             className={({ isActive }) =>
               isActive ? `${styles.tab} ${styles.tabActive}` : styles.tab
             }
-            end={to === "/"}
+            end
             title={label}
           >
             <span className={styles.tabIcon} aria-hidden>

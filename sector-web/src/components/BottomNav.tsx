@@ -14,7 +14,7 @@ export function BottomNav() {
           className={({ isActive }) =>
             isActive ? `${styles.link} ${styles.linkActive}` : styles.link
           }
-          end={to === "/"}
+          end
         >
           <span className={styles.icon} aria-hidden>
             <Icon className={styles.iconSvg} />
