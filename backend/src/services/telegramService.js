@@ -354,12 +354,9 @@ export async function handleTelegramUpdate(update) {
 
       const buttons = events.map((ev) => {
         const dateStr = ev.startsAt ? formatEventDate(ev.startsAt) : "";
-        const labelParts = [];
-        if (dateStr) labelParts.push(dateStr);
-        if (ev.place) labelParts.push(ev.place);
-        const subtitle = labelParts.length ? `\n${escapeHtml(labelParts.join(" · "))}` : "";
-        const text =
-          (escapeHtml(ev.title) || "Мероприятие") + subtitle;
+        const title = escapeHtml(ev.title) || "Мероприятие";
+        const subtitle = dateStr ? `\n${dateStr}` : "";
+        const text = title + subtitle;
 
         // Telegram допускает до 64 байт в callback_data — id с префиксом умещается.
         return [
