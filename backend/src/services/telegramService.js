@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import Chat from "../models/Chat.js";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
+const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || null;
 const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
 const TELEGRAM_EVENT_TOPIC_ID = process.env.TELEGRAM_EVENT_TOPIC_ID
   ? Number(process.env.TELEGRAM_EVENT_TOPIC_ID)
@@ -148,6 +149,37 @@ async function replaceCallbackMessage(callback, text, extra = {}) {
   }
 
   return sendTelegramMessage(chatId, text, extra);
+}
+
+function getWebAppUrl() {
+  return TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
+}
+
+function buildOpenAppButton(chatType, text = "Открыть приложение") {
+  const webAppUrl = getWebAppUrl();
+
+  if (chatType === "private") {
+    return {
+      text,
+      web_app: {
+        url: webAppUrl,
+      },
+    };
+  }
+
+  // В группах/топиках используем deep‑link, чтобы Telegram открыл мини‑апп в ЛС с ботом, а не браузер
+  if (TELEGRAM_BOT_USERNAME) {
+    return {
+      text,
+      url: `https://t.me/${TELEGRAM_BOT_USERNAME}/app`,
+    };
+  }
+
+  // Запасной вариант — просто открыть веб‑версию
+  return {
+    text,
+    url: webAppUrl,
+  };
 }
 
 function escapeHtml(text) {
@@ -307,12 +339,17 @@ export async function handleTelegramUpdate(update) {
           ];
         });
 
+        const openButtonInList = buildOpenAppButton(
+          chatType,
+          "Открыть приложение"
+        );
+
         const header =
           "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
         await replaceCallbackMessage(callback, header, {
           reply_markup: {
-            inline_keyboard: buttons,
+            inline_keyboard: [...buttons, [openButtonInList]],
           },
         });
 
@@ -462,6 +499,11 @@ export async function handleTelegramUpdate(update) {
           text = lines.join("\n");
         }
 
+        const openButtonInParticipants = buildOpenAppButton(
+          chatType,
+          "Открыть приложение"
+        );
+
         const replyMarkup = {
           inline_keyboard: [
             [
@@ -476,6 +518,7 @@ export async function handleTelegramUpdate(update) {
                 callback_data: "events:list",
               },
             ],
+            [openButtonInParticipants],
           ],
         };
 
@@ -535,9 +578,6 @@ export async function handleTelegramUpdate(update) {
         const text = lines.join("\n");
 
         const routeUrl = buildYandexRouteUrl(event);
-        const webAppUrl =
-          TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
-
         const firstRow = [];
 
         if (routeUrl) {
@@ -547,20 +587,7 @@ export async function handleTelegramUpdate(update) {
           });
         }
 
-        // В группах web_app-кнопки недоступны, используем обычную URL-кнопку
-        if (chatType === "private") {
-          firstRow.push({
-            text: "Открыть в приложении",
-            web_app: {
-              url: webAppUrl,
-            },
-          });
-        } else {
-          firstRow.push({
-            text: "Открыть в приложении",
-            url: webAppUrl,
-          });
-        }
+        firstRow.push(buildOpenAppButton(chatType, "Открыть приложение"));
 
         const secondRow = [
           {
@@ -637,22 +664,11 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть мини‑приложение.\n\n" +
+      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 
-    const openButton =
-      chatType === "private"
-        ? {
-            text: "Открыть Sektor",
-            web_app: {
-              url: webAppUrl,
-            },
-          }
-        : {
-            text: "Открыть Sektor",
-            url: webAppUrl,
-          };
+    const openButton = buildOpenAppButton(chatType, "Открыть приложение");
 
     await sendTelegramMessage(chatId, welcomeText, {
       reply_markup: {
@@ -675,10 +691,16 @@ export async function handleTelegramUpdate(update) {
         .lean();
 
       if (!events.length) {
-        await sendTelegramMessage(
-          chatId,
-          "Пока нет предстоящих мероприятий."
+        const openButtonNoEvents = buildOpenAppButton(
+          chatType,
+          "Открыть приложение"
         );
+
+        await sendTelegramMessage(chatId, "Пока нет предстоящих мероприятий.", {
+          reply_markup: {
+            inline_keyboard: [[openButtonNoEvents]],
+          },
+        });
         return;
       }
 
@@ -700,9 +722,14 @@ export async function handleTelegramUpdate(update) {
       const header =
         "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
+      const openButtonInEventsList = buildOpenAppButton(
+        chatType,
+        "Открыть приложение"
+      );
+
       await sendTelegramMessage(chatId, header, {
         reply_markup: {
-          inline_keyboard: buttons,
+          inline_keyboard: [...buttons, [openButtonInEventsList]],
         },
       });
     } catch (error) {
