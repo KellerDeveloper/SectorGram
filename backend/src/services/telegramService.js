@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import Event from "../models/Event.js";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
 const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
@@ -151,6 +152,21 @@ function formatEventDate(startsAt) {
   }
 }
 
+function buildYandexRouteUrl(event) {
+  if (event?.location && typeof event.location.latitude === "number" && typeof event.location.longitude === "number") {
+    const lat = event.location.latitude;
+    const lon = event.location.longitude;
+    return `https://yandex.ru/maps/?rtext=~${lat},${lon}`;
+  }
+
+  if (event?.place) {
+    const query = encodeURIComponent(event.place);
+    return `https://yandex.ru/maps/?text=${query}`;
+  }
+
+  return null;
+}
+
 export async function notifyNewEventCreated(event) {
   if (!TELEGRAM_EVENT_CHAT_ID) {
     return;
@@ -198,6 +214,87 @@ export async function notifyNewEventCreated(event) {
 export async function handleTelegramUpdate(update) {
   if (!update) return;
 
+  // Обработка callback_query (нажатия на inline‑кнопки)
+  if (update.callback_query) {
+    const callback = update.callback_query;
+    const data = callback.data || "";
+    const chatId = callback.message?.chat?.id;
+
+    if (!chatId) {
+      return;
+    }
+
+    if (data.startsWith("event:")) {
+      const eventId = data.slice("event:".length).trim();
+
+      try {
+        const event = await Event.findById(eventId);
+        if (!event) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Мероприятие не найдено",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const lines = [];
+        lines.push(`<b>${escapeHtml(event.title)}</b>`);
+
+        if (event.startsAt) {
+          const formatted = formatEventDate(event.startsAt);
+          if (formatted) {
+            lines.push(`🕒 ${formatted}`);
+          }
+        }
+
+        if (event.place) {
+          lines.push(`📍 ${escapeHtml(event.place)}`);
+        }
+
+        if (event.description) {
+          lines.push("");
+          lines.push(escapeHtml(event.description));
+        }
+
+        const text = lines.join("\n");
+
+        const routeUrl = buildYandexRouteUrl(event);
+        const replyMarkup = routeUrl
+          ? {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Построить маршрут",
+                    url: routeUrl,
+                  },
+                ],
+              ],
+            }
+          : undefined;
+
+        await sendTelegramMessage(chatId, text, replyMarkup ? { reply_markup: replyMarkup } : {});
+
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+        });
+      } catch (error) {
+        console.error("Failed to handle event callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Ошибка при получении мероприятия",
+          show_alert: true,
+        });
+      }
+    } else {
+      await callTelegramApi("answerCallbackQuery", {
+        callback_query_id: callback.id,
+      });
+    }
+
+    return;
+  }
+
   const message = update.message || update.edited_message;
   const chatId = message?.chat?.id;
   const text = message?.text;
@@ -214,7 +311,9 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть мини‑приложение.";
+      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть мини‑приложение.\n\n" +
+      "Команды:\n" +
+      "/events — список ближайших мероприятий.";
 
     await sendTelegramMessage(chatId, welcomeText, {
       reply_markup: {
@@ -230,6 +329,62 @@ export async function handleTelegramUpdate(update) {
         ],
       },
     });
+
+    return;
+  }
+
+  if (lowerText.startsWith("/events")) {
+    try {
+      const now = new Date();
+      const events = await Event.find({
+        startsAt: { $gte: now },
+        status: { $ne: "cancelled" },
+      })
+        .sort({ startsAt: 1 })
+        .limit(10)
+        .lean();
+
+      if (!events.length) {
+        await sendTelegramMessage(
+          chatId,
+          "Пока нет предстоящих мероприятий."
+        );
+        return;
+      }
+
+      const buttons = events.map((ev) => {
+        const dateStr = ev.startsAt ? formatEventDate(ev.startsAt) : "";
+        const labelParts = [];
+        if (dateStr) labelParts.push(dateStr);
+        if (ev.place) labelParts.push(ev.place);
+        const subtitle = labelParts.length ? `\n${escapeHtml(labelParts.join(" · "))}` : "";
+        const text =
+          (escapeHtml(ev.title) || "Мероприятие") + subtitle;
+
+        // Telegram допускает до 64 байт в callback_data — id с префиксом умещается.
+        return [
+          {
+            text,
+            callback_data: `event:${ev._id.toString()}`,
+          },
+        ];
+      });
+
+      const header =
+        "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
+
+      await sendTelegramMessage(chatId, header, {
+        reply_markup: {
+          inline_keyboard: buttons,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to handle /events command:", error);
+      await sendTelegramMessage(
+        chatId,
+        "Не удалось получить список мероприятий. Попробуйте позже."
+      );
+    }
 
     return;
   }
