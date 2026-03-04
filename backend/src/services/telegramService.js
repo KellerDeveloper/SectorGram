@@ -131,16 +131,9 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
 
 async function replaceCallbackMessage(callback, text, extra = {}) {
   const chatId = callback.message?.chat?.id;
-  const chatType = callback.message?.chat?.type;
   const messageId = callback.message?.message_id;
 
   if (!chatId) return null;
-
-  // В группах/супергруппах не пытаемся ничего удалять — просто шлём новое сообщение,
-  // чтобы не упираться в ограничения Telegram по deleteMessage.
-  if (chatType === "group" || chatType === "supergroup") {
-    return sendTelegramMessage(chatId, text, extra);
-  }
 
   // Пытаемся удалить предыдущее сообщение бота, чтобы не спамить
   if (messageId) {
@@ -229,13 +222,32 @@ export async function notifyNewEventCreated(event) {
 
   const text = lines.join("\n");
 
-  const extra = {};
-  if (TELEGRAM_EVENT_TOPIC_ID && !Number.isNaN(TELEGRAM_EVENT_TOPIC_ID)) {
-    extra.message_thread_id = TELEGRAM_EVENT_TOPIC_ID;
-  }
-
   try {
-    await sendTelegramMessage(TELEGRAM_EVENT_CHAT_ID, text, extra);
+    const extra = {};
+    if (TELEGRAM_EVENT_TOPIC_ID && !Number.isNaN(TELEGRAM_EVENT_TOPIC_ID)) {
+      extra.message_thread_id = TELEGRAM_EVENT_TOPIC_ID;
+    }
+
+    const result = await sendTelegramMessage(
+      TELEGRAM_EVENT_CHAT_ID,
+      text,
+      extra
+    );
+
+    // Если тема закрыта — пробуем отправить без message_thread_id в общий чат
+    if (
+      result &&
+      result.ok === false &&
+      result.error_code === 400 &&
+      typeof result.description === "string" &&
+      result.description.includes("TOPIC_CLOSED") &&
+      extra.message_thread_id
+    ) {
+      console.warn(
+        "Telegram topic is closed, retrying notifyNewEventCreated without thread id"
+      );
+      await sendTelegramMessage(TELEGRAM_EVENT_CHAT_ID, text);
+    }
   } catch (error) {
     console.error("Failed to send new event notification to Telegram:", error);
   }
