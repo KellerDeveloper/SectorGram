@@ -131,9 +131,16 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
 
 async function replaceCallbackMessage(callback, text, extra = {}) {
   const chatId = callback.message?.chat?.id;
+  const chatType = callback.message?.chat?.type;
   const messageId = callback.message?.message_id;
 
   if (!chatId) return null;
+
+  // В группах/супергруппах не пытаемся ничего удалять — просто шлём новое сообщение,
+  // чтобы не упираться в ограничения Telegram по deleteMessage.
+  if (chatType === "group" || chatType === "supergroup") {
+    return sendTelegramMessage(chatId, text, extra);
+  }
 
   // Пытаемся удалить предыдущее сообщение бота, чтобы не спамить
   if (messageId) {
