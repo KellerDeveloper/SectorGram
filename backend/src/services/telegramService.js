@@ -249,6 +249,7 @@ export async function handleTelegramUpdate(update) {
     const callback = update.callback_query;
     const data = callback.data || "";
     const chatId = callback.message?.chat?.id;
+    const chatType = callback.message?.chat?.type;
 
     const telegramUserId = callback.from?.id ? String(callback.from.id) : null;
 
@@ -534,12 +535,20 @@ export async function handleTelegramUpdate(update) {
           });
         }
 
-        firstRow.push({
-          text: "Открыть в приложении",
-          web_app: {
+        // В группах web_app-кнопки недоступны, используем обычную URL-кнопку
+        if (chatType === "private") {
+          firstRow.push({
+            text: "Открыть в приложении",
+            web_app: {
+              url: webAppUrl,
+            },
+          });
+        } else {
+          firstRow.push({
+            text: "Открыть в приложении",
             url: webAppUrl,
-          },
-        });
+          });
+        }
 
         const secondRow = [
           {
@@ -601,6 +610,7 @@ export async function handleTelegramUpdate(update) {
 
   const message = update.message || update.edited_message;
   const chatId = message?.chat?.id;
+  const chatType = message?.chat?.type;
   const text = message?.text;
 
   if (!chatId) {
@@ -619,18 +629,22 @@ export async function handleTelegramUpdate(update) {
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 
+    const openButton =
+      chatType === "private"
+        ? {
+            text: "Открыть Sektor",
+            web_app: {
+              url: webAppUrl,
+            },
+          }
+        : {
+            text: "Открыть Sektor",
+            url: webAppUrl,
+          };
+
     await sendTelegramMessage(chatId, welcomeText, {
       reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "Открыть Sektor",
-              web_app: {
-                url: webAppUrl,
-              },
-            },
-          ],
-        ],
+        inline_keyboard: [[openButton]],
       },
     });
 
