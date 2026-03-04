@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import type { Event } from './api/events'
+import type { Event, UpdateEventPayload } from './api/events'
 import {
   getEvents,
   joinEvent,
   leaveEvent,
   createEvent,
   cancelEvent,
+  updateEvent,
 } from './api/events'
 import { searchPlaces, type YandexPlace } from './api/yandex'
 import type { CurrentUser } from './api/users'
@@ -32,6 +33,18 @@ function formatDate(iso: string) {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function toInputDatetime(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toISOString().slice(0, 16)
+}
+
+function toISOLocalFromInput(value: string): string {
+  if (!value) return ''
+  const d = new Date(value)
+  return d.toISOString()
 }
 
 function isUpcoming(ev: Event) {
@@ -61,6 +74,12 @@ function App() {
   const [filter, setFilter] = useState<Filter>('all')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
   const [participantsEventId, setParticipantsEventId] = useState<string | null>(null)
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editPlace, setEditPlace] = useState('')
+  const [editStartsAt, setEditStartsAt] = useState('')
+  const [editDescription, setEditDescription] = useState('')
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -199,6 +218,75 @@ function App() {
       }
     } finally {
       setActionEventId(null)
+    }
+  }
+
+  function startEditEvent(ev: Event) {
+    setEditingEventId(ev.id)
+    setEditTitle(ev.title ?? '')
+    setEditPlace(ev.place ?? '')
+    setEditDescription(ev.description ?? '')
+    setEditStartsAt(ev.startsAt ? toInputDatetime(ev.startsAt) : '')
+    setError('')
+  }
+
+  function cancelEditEvent() {
+    setEditingEventId(null)
+    setEditing(false)
+    setEditTitle('')
+    setEditPlace('')
+    setEditStartsAt('')
+    setEditDescription('')
+  }
+
+  async function handleEditEvent(ev: Event) {
+    if (!user) {
+      setError('Нет авторизации. Войдите в Sektor в браузере.')
+      return
+    }
+    if (editing) return
+
+    const title = editTitle.trim()
+    const place = editPlace.trim()
+    const startsAtRaw = editStartsAt.trim()
+    const description = editDescription.trim()
+
+    if (!title || !place || !startsAtRaw) {
+      setError('Заполните название, дату/время и место.')
+      return
+    }
+
+    let startsAtIso: string
+    try {
+      startsAtIso = toISOLocalFromInput(startsAtRaw)
+    } catch {
+      setError('Некорректная дата/время начала.')
+      return
+    }
+
+    setEditing(true)
+    setError('')
+    try {
+      const payload: UpdateEventPayload = {
+        title,
+        place,
+        startsAt: startsAtIso,
+        description: description || undefined,
+      }
+
+      const updated = await updateEvent(ev.id, payload)
+      setEvents((prev) =>
+        prev.map((e) => (e.id === updated.id ? updated : e)),
+      )
+      cancelEditEvent()
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Не удалось сохранить изменения')
+      }
+    } finally {
+      setEditing(false)
     }
   }
 
@@ -529,29 +617,100 @@ function App() {
                     <span className="event-participants">
                       Участников: {ev.participants?.length ?? 0}
                     </span>
-                    <button
-                      type="button"
-                      className={`event-action ${
-                        isCreator
-                          ? 'event-action--secondary'
-                          : going
-                            ? 'event-action--secondary'
-                            : 'event-action--primary'
-                      }`}
-                      onClick={() =>
-                        isCreator ? handleDeleteEvent(ev) : handleToggleParticipation(ev)
-                      }
-                      disabled={isBusy}
-                    >
-                      {isBusy
-                        ? '…'
-                        : isCreator
-                          ? 'Удалить событие'
-                          : going
-                            ? 'Не иду'
-                            : 'Иду'}
-                    </button>
+                    {isCreator ? (
+                      <div className="event-footer-actions">
+                        <button
+                          type="button"
+                          className="event-action event-action--primary"
+                          onClick={() => startEditEvent(ev)}
+                          disabled={isBusy}
+                        >
+                          {editingEventId === ev.id && editing ? 'Сохранение…' : 'Редактировать'}
+                        </button>
+                        <button
+                          type="button"
+                          className="event-action event-action--secondary"
+                          onClick={() => handleDeleteEvent(ev)}
+                          disabled={isBusy}
+                        >
+                          {isBusy ? '…' : 'Удалить'}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`event-action ${
+                          going ? 'event-action--secondary' : 'event-action--primary'
+                        }`}
+                        onClick={() => handleToggleParticipation(ev)}
+                        disabled={isBusy}
+                      >
+                        {isBusy ? '…' : going ? 'Не иду' : 'Иду'}
+                      </button>
+                    )}
                   </div>
+                  {isCreator && editingEventId === ev.id && (
+                    <div className="event-edit-card">
+                      <h3 className="event-edit-title">Редактировать событие</h3>
+                      <div className="create-form-row">
+                        <label htmlFor={`edit-title-${ev.id}`}>Название</label>
+                        <input
+                          id={`edit-title-${ev.id}`}
+                          className="create-input"
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                        />
+                      </div>
+                      <div className="create-form-row">
+                        <label htmlFor={`edit-startsAt-${ev.id}`}>Дата и время</label>
+                        <input
+                          id={`edit-startsAt-${ev.id}`}
+                          className="create-input"
+                          type="datetime-local"
+                          value={editStartsAt}
+                          onChange={(e) => setEditStartsAt(e.target.value)}
+                        />
+                      </div>
+                      <div className="create-form-row">
+                        <label htmlFor={`edit-place-${ev.id}`}>Место</label>
+                        <input
+                          id={`edit-place-${ev.id}`}
+                          className="create-input"
+                          type="text"
+                          value={editPlace}
+                          onChange={(e) => setEditPlace(e.target.value)}
+                        />
+                      </div>
+                      <div className="create-form-row">
+                        <label htmlFor={`edit-description-${ev.id}`}>Описание</label>
+                        <textarea
+                          id={`edit-description-${ev.id}`}
+                          className="create-textarea"
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                        />
+                      </div>
+                      <div className="create-actions">
+                        <button
+                          type="button"
+                          className="create-cancel"
+                          onClick={cancelEditEvent}
+                          disabled={editing}
+                        >
+                          Отмена
+                        </button>
+                        <button
+                          type="button"
+                          className="create-submit"
+                          onClick={() => handleEditEvent(ev)}
+                          disabled={editing}
+                        >
+                          {editing ? 'Сохранение…' : 'Сохранить'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   {ev.participants && ev.participants.length > 0 && (
                     <div className="event-participants-actions">
                       <button

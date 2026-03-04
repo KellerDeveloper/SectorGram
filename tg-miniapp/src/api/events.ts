@@ -34,6 +34,19 @@ export type CreateEventPayload = {
   } | null
 }
 
+export type UpdateEventPayload = {
+  title?: string
+  place?: string
+  startsAt?: string
+  endsAt?: string
+  description?: string
+  coverImage?: string
+  location?: {
+    latitude?: number
+    longitude?: number
+  } | null
+}
+
 export async function getEvents(): Promise<Event[]> {
   return api.get<Event[]>('/events')
 }
@@ -52,6 +65,13 @@ export async function leaveEvent(id: string): Promise<Event> {
 
 export async function cancelEvent(id: string): Promise<Event> {
   return api.post<Event>(`/events/${id}/cancel`)
+}
+
+export async function updateEvent(
+  id: string,
+  payload: UpdateEventPayload,
+): Promise<Event> {
+  return api.put<Event>(`/events/${id}`, payload)
 }
 
 
