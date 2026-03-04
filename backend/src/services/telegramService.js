@@ -324,11 +324,10 @@ export async function handleTelegramUpdate(update) {
           ? event.participants
           : [];
 
+        let text;
+
         if (!participants.length) {
-          await sendTelegramMessage(
-            chatId,
-            "На это мероприятие пока никто не записался."
-          );
+          text = "На это мероприятие пока никто не записался.";
         } else {
           const lines = [];
           lines.push("Участники мероприятия:");
@@ -345,9 +344,7 @@ export async function handleTelegramUpdate(update) {
             // Делаем «тег»: при наличии telegramId даём кликабельную ссылку,
             // в тексте показываем @username или имя.
             if (telegramId) {
-              const label = username
-                ? `@${username}`
-                : name;
+              const label = username ? `@${username}` : name;
               const safeLabel = escapeHtml(label);
               lines.push(
                 `• <a href="tg://user?id=${telegramId}">${safeLabel}</a>`
@@ -359,9 +356,16 @@ export async function handleTelegramUpdate(update) {
             }
           }
 
-          const text = lines.join("\n");
-          await sendTelegramMessage(chatId, text);
+          text = lines.join("\n");
         }
+
+        // Не спамим новыми сообщениями — обновляем существующее
+        await callTelegramApi("editMessageText", {
+          chat_id: chatId,
+          message_id: callback.message?.message_id,
+          text,
+          parse_mode: "HTML",
+        });
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
@@ -458,11 +462,14 @@ export async function handleTelegramUpdate(update) {
               }
             : undefined;
 
-        await sendTelegramMessage(
-          chatId,
+        // Не создаём новое сообщение — редактируем существующее
+        await callTelegramApi("editMessageText", {
+          chat_id: chatId,
+          message_id: callback.message?.message_id,
           text,
-          replyMarkup ? { reply_markup: replyMarkup } : {}
-        );
+          parse_mode: "HTML",
+          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+        });
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
