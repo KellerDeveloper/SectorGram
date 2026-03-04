@@ -249,13 +249,17 @@ export async function notifyNewEventCreated(event) {
 
   lines.push("");
 
-  const webAppUrl = TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
-  lines.push(`Открыть в мини‑карте: ${webAppUrl}`);
+  const webAppUrl = getWebAppUrl();
+  lines.push(`Открыть в приложении: ${webAppUrl}`);
 
   const text = lines.join("\n");
 
   try {
-    const extra = {};
+    const extra = {
+      reply_markup: {
+        inline_keyboard: [[buildOpenAppButton("group", "Открыть приложение")]],
+      },
+    };
     if (TELEGRAM_EVENT_TOPIC_ID && !Number.isNaN(TELEGRAM_EVENT_TOPIC_ID)) {
       extra.message_thread_id = TELEGRAM_EVENT_TOPIC_ID;
     }
@@ -278,7 +282,13 @@ export async function notifyNewEventCreated(event) {
       console.warn(
         "Telegram topic is closed, retrying notifyNewEventCreated without thread id"
       );
-      await sendTelegramMessage(TELEGRAM_EVENT_CHAT_ID, text);
+      await sendTelegramMessage(TELEGRAM_EVENT_CHAT_ID, text, {
+        reply_markup: {
+          inline_keyboard: [
+            [buildOpenAppButton("group", "Открыть приложение")],
+          ],
+        },
+      });
     }
   } catch (error) {
     console.error("Failed to send new event notification to Telegram:", error);
