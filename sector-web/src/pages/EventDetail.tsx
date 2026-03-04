@@ -176,7 +176,15 @@ export function EventDetail() {
               </button>
             )}
             {isCreator && (
-              <span className={styles.badge}>Вы создатель</span>
+              <div className={styles.creatorActions}>
+                <span className={styles.badge}>Вы создатель</span>
+                <Link
+                  to={`/events/${event.id}/edit`}
+                  className={styles.editLink}
+                >
+                  Редактировать
+                </Link>
+              </div>
             )}
           </div>
         </div>

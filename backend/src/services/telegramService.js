@@ -1,6 +1,10 @@
 import crypto from "crypto";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
+const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
+const TELEGRAM_EVENT_TOPIC_ID = process.env.TELEGRAM_EVENT_TOPIC_ID
+  ? Number(process.env.TELEGRAM_EVENT_TOPIC_ID)
+  : null;
 
 const TELEGRAM_API_BASE = TELEGRAM_BOT_TOKEN
   ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
@@ -120,6 +124,75 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
   };
 
   return callTelegramApi("sendMessage", payload);
+}
+
+function escapeHtml(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function formatEventDate(startsAt) {
+  try {
+    const date = new Date(startsAt);
+    return date.toLocaleString("ru-RU", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
+
+export async function notifyNewEventCreated(event) {
+  if (!TELEGRAM_EVENT_CHAT_ID) {
+    return;
+  }
+
+  if (!event || !event.id) {
+    return;
+  }
+
+  const lines = [];
+  lines.push("Новое мероприятие ✨");
+  lines.push("");
+  lines.push(`<b>${escapeHtml(event.title)}</b>`);
+
+  if (event.startsAt) {
+    const formatted = formatEventDate(event.startsAt);
+    if (formatted) {
+      lines.push(`🕒 ${formatted}`);
+    }
+  }
+
+  if (event.place) {
+    lines.push(`📍 ${escapeHtml(event.place)}`);
+  }
+
+  lines.push("");
+
+  const webAppUrl = TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
+  lines.push(`Открыть в мини‑карте: ${webAppUrl}`);
+
+  const text = lines.join("\n");
+
+  const extra = {};
+  if (TELEGRAM_EVENT_TOPIC_ID && !Number.isNaN(TELEGRAM_EVENT_TOPIC_ID)) {
+    extra.message_thread_id = TELEGRAM_EVENT_TOPIC_ID;
+  }
+
+  try {
+    await sendTelegramMessage(TELEGRAM_EVENT_CHAT_ID, text, extra);
+  } catch (error) {
+    console.error("Failed to send new event notification to Telegram:", error);
+  }
 }
 
 export async function handleTelegramUpdate(update) {

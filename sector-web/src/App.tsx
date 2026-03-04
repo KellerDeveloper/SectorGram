@@ -7,6 +7,7 @@ import { ChatRoom } from "./pages/ChatRoom";
 import { EventList } from "./pages/EventList";
 import { EventNew } from "./pages/EventNew";
 import { EventDetail } from "./pages/EventDetail";
+import { EventEdit } from "./pages/EventEdit";
 import "./index.css";
 
 function Protected() {
@@ -28,6 +29,7 @@ function AppRoutes() {
           <Route path="events" element={<EventList />} />
           <Route path="events/new" element={<EventNew />} />
           <Route path="events/:id" element={<EventDetail />} />
+          <Route path="events/:id/edit" element={<EventEdit />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

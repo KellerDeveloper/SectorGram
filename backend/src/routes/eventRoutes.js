@@ -7,10 +7,12 @@ import {
   join,
   leave,
   cancel,
+  update,
 } from "../controllers/eventController.js";
 import {
   createEventValidation,
   eventIdParamValidation,
+  updateEventValidation,
 } from "../validators/eventValidators.js";
 
 const router = express.Router();
@@ -23,6 +25,7 @@ router.get("/:id", eventIdParamValidation, getOne);
 router.post("/:id/join", eventIdParamValidation, join);
 router.post("/:id/leave", eventIdParamValidation, leave);
 router.post("/:id/cancel", eventIdParamValidation, cancel);
+router.put("/:id", updateEventValidation, update);
 
 export default router;
 

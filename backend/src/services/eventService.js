@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Event from "../models/Event.js";
 import Chat from "../models/Chat.js";
+import { notifyNewEventCreated } from "./telegramService.js";
 
 export async function createEvent({
   creatorId,
@@ -54,7 +55,16 @@ export async function createEvent({
   await event.populate("creatorId", "name avatar");
   await event.populate("participants", "name avatar");
 
-  return mapEvent(event);
+  const mapped = mapEvent(event);
+
+  // Уведомление в Telegram о новом мероприятии (если настроены переменные окружения)
+  try {
+    await notifyNewEventCreated(mapped);
+  } catch (error) {
+    console.error("Failed to notify Telegram about new event:", error);
+  }
+
+  return mapped;
 }
 
 export async function listEvents() {
@@ -168,6 +178,82 @@ export async function cancelEvent({ eventId, userId }) {
   }
 
   event.status = "cancelled";
+  await event.save();
+
+  await event.populate("creatorId", "name avatar");
+  await event.populate("participants", "name avatar");
+
+  return mapEvent(event);
+}
+
+export async function updateEvent({
+  eventId,
+  userId,
+  title,
+  description,
+  startsAt,
+  endsAt,
+  place,
+  coverImage,
+  location,
+}) {
+  const event = await Event.findById(eventId);
+  if (!event) {
+    const error = new Error("Мероприятие не найдено");
+    error.status = 404;
+    throw error;
+  }
+
+  const isCreator = event.creatorId.toString() === userId;
+  if (!isCreator) {
+    const error = new Error("Только создатель может редактировать мероприятие");
+    error.status = 403;
+    throw error;
+  }
+
+  if (typeof title === "string") {
+    event.title = title.trim();
+  }
+
+  if (description !== undefined) {
+    event.description = description?.trim() || undefined;
+  }
+
+  if (startsAt !== undefined) {
+    event.startsAt = new Date(startsAt);
+  }
+
+  if (endsAt !== undefined) {
+    event.endsAt = endsAt ? new Date(endsAt) : undefined;
+  }
+
+  if (typeof place === "string") {
+    event.place = place.trim();
+  }
+
+  if (coverImage !== undefined) {
+    event.coverImage = coverImage || undefined;
+  }
+
+  if (location !== undefined) {
+    event.location =
+      location &&
+      typeof location === "object" &&
+      (typeof location.latitude === "number" ||
+        typeof location.longitude === "number")
+        ? {
+            latitude:
+              typeof location.latitude === "number"
+                ? location.latitude
+                : undefined,
+            longitude:
+              typeof location.longitude === "number"
+                ? location.longitude
+                : undefined,
+          }
+        : undefined;
+  }
+
   await event.save();
 
   await event.populate("creatorId", "name avatar");
