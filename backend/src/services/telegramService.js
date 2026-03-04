@@ -5,6 +5,9 @@ import Chat from "../models/Chat.js";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
 const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || null;
+const TELEGRAM_WEBAPP_DEEPLINK =
+  process.env.TELEGRAM_WEBAPP_DEEPLINK ||
+  "https://t.me/sektor_moscow_bot/sektor_events";
 const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
 const TELEGRAM_EVENT_TOPIC_ID = process.env.TELEGRAM_EVENT_TOPIC_ID
   ? Number(process.env.TELEGRAM_EVENT_TOPIC_ID)
@@ -156,15 +159,9 @@ function getWebAppUrl() {
 }
 
 function buildOpenAppButton(chatType, text = "Открыть приложение") {
-  const webAppUrl = getWebAppUrl();
-
-  // Во всех типах чатов используем web_app,
-  // чтобы мини‑приложение открывалось прямо в Telegram без перехода в браузер или ЛС.
   return {
     text,
-    web_app: {
-      url: webAppUrl,
-    },
+    url: TELEGRAM_WEBAPP_DEEPLINK,
   };
 }
 
