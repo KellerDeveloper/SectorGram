@@ -241,12 +241,20 @@ export async function handleTelegramUpdate(update) {
           .lean();
 
         if (!events.length) {
-          await callTelegramApi("editMessageText", {
-            chat_id: chatId,
-            message_id: callback.message?.message_id,
-            text: "Пока нет предстоящих мероприятий.",
-            parse_mode: "HTML",
-          });
+          try {
+            await callTelegramApi("editMessageText", {
+              chat_id: chatId,
+              message_id: callback.message?.message_id,
+              text: "Пока нет предстоящих мероприятий.",
+              parse_mode: "HTML",
+            });
+          } catch (e) {
+            // Если редактирование недоступно (например, в группе) — просто отправляем новое сообщение
+            await sendTelegramMessage(
+              chatId,
+              "Пока нет предстоящих мероприятий."
+            );
+          }
 
           await callTelegramApi("answerCallbackQuery", {
             callback_query_id: callback.id,
@@ -271,15 +279,24 @@ export async function handleTelegramUpdate(update) {
         const header =
           "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
-        await callTelegramApi("editMessageText", {
-          chat_id: chatId,
-          message_id: callback.message?.message_id,
-          text: header,
-          parse_mode: "HTML",
-          reply_markup: {
-            inline_keyboard: buttons,
-          },
-        });
+        try {
+          await callTelegramApi("editMessageText", {
+            chat_id: chatId,
+            message_id: callback.message?.message_id,
+            text: header,
+            parse_mode: "HTML",
+            reply_markup: {
+              inline_keyboard: buttons,
+            },
+          });
+        } catch (e) {
+          // Если нельзя редактировать (например, бот не админ в группе) — отправляем новый список
+          await sendTelegramMessage(chatId, header, {
+            reply_markup: {
+              inline_keyboard: buttons,
+            },
+          });
+        }
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
@@ -444,14 +461,20 @@ export async function handleTelegramUpdate(update) {
           ],
         };
 
-        // Не спамим новыми сообщениями — обновляем существующее
-        await callTelegramApi("editMessageText", {
-          chat_id: chatId,
-          message_id: callback.message?.message_id,
-          text,
-          parse_mode: "HTML",
-          reply_markup: replyMarkup,
-        });
+        // Пытаемся обновить существующее сообщение; если нельзя — шлём новое
+        try {
+          await callTelegramApi("editMessageText", {
+            chat_id: chatId,
+            message_id: callback.message?.message_id,
+            text,
+            parse_mode: "HTML",
+            reply_markup: replyMarkup,
+          });
+        } catch (e) {
+          await sendTelegramMessage(chatId, text, {
+            reply_markup: replyMarkup,
+          });
+        }
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
@@ -556,14 +579,22 @@ export async function handleTelegramUpdate(update) {
               }
             : undefined;
 
-        // Не создаём новое сообщение — редактируем существующее
-        await callTelegramApi("editMessageText", {
-          chat_id: chatId,
-          message_id: callback.message?.message_id,
-          text,
-          parse_mode: "HTML",
-          ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
-        });
+        // В личке редактируем, в группах (где может быть запрещено) шлём новое
+        try {
+          await callTelegramApi("editMessageText", {
+            chat_id: chatId,
+            message_id: callback.message?.message_id,
+            text,
+            parse_mode: "HTML",
+            ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+          });
+        } catch (e) {
+          await sendTelegramMessage(
+            chatId,
+            text,
+            replyMarkup ? { reply_markup: replyMarkup } : {}
+          );
+        }
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
