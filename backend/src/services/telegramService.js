@@ -158,27 +158,13 @@ function getWebAppUrl() {
 function buildOpenAppButton(chatType, text = "Открыть приложение") {
   const webAppUrl = getWebAppUrl();
 
-  if (chatType === "private") {
-    return {
-      text,
-      web_app: {
-        url: webAppUrl,
-      },
-    };
-  }
-
-  // В группах/топиках используем deep‑link, чтобы Telegram открыл мини‑апп в ЛС с ботом, а не браузер
-  if (TELEGRAM_BOT_USERNAME) {
-    return {
-      text,
-      url: `https://t.me/${TELEGRAM_BOT_USERNAME}/app`,
-    };
-  }
-
-  // Запасной вариант — просто открыть веб‑версию
+  // Во всех типах чатов используем web_app,
+  // чтобы мини‑приложение открывалось прямо в Telegram без перехода в браузер или ЛС.
   return {
     text,
-    url: webAppUrl,
+    web_app: {
+      url: webAppUrl,
+    },
   };
 }
 
