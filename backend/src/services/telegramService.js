@@ -308,7 +308,7 @@ export async function handleTelegramUpdate(update) {
       try {
         const event = await Event.findById(eventId).populate(
           "participants",
-          "name"
+          "name username telegramId"
         );
 
         if (!event) {
@@ -336,9 +336,27 @@ export async function handleTelegramUpdate(update) {
 
           for (const p of participants) {
             const name =
-              (p && p.name && String(p.name).trim()) ||
-              "Участник";
-            lines.push(`• ${escapeHtml(name)}`);
+              (p && p.name && String(p.name).trim()) || "Участник";
+            const username =
+              p && p.username && String(p.username).trim();
+            const telegramId =
+              p && p.telegramId && String(p.telegramId).trim();
+
+            // Делаем «тег»: при наличии telegramId даём кликабельную ссылку,
+            // в тексте показываем @username или имя.
+            if (telegramId) {
+              const label = username
+                ? `@${username}`
+                : name;
+              const safeLabel = escapeHtml(label);
+              lines.push(
+                `• <a href="tg://user?id=${telegramId}">${safeLabel}</a>`
+              );
+            } else if (username) {
+              lines.push(`• @${escapeHtml(username)}`);
+            } else {
+              lines.push(`• ${escapeHtml(name)}`);
+            }
           }
 
           const text = lines.join("\n");
