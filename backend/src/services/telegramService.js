@@ -228,6 +228,74 @@ export async function handleTelegramUpdate(update) {
       return;
     }
 
+    // Вернуться к списку мероприятий
+    if (data === "events:list") {
+      try {
+        const now = new Date();
+        const events = await Event.find({
+          startsAt: { $gte: now },
+          status: { $ne: "cancelled" },
+        })
+          .sort({ startsAt: 1 })
+          .limit(10)
+          .lean();
+
+        if (!events.length) {
+          await callTelegramApi("editMessageText", {
+            chat_id: chatId,
+            message_id: callback.message?.message_id,
+            text: "Пока нет предстоящих мероприятий.",
+            parse_mode: "HTML",
+          });
+
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+          });
+          return;
+        }
+
+        const buttons = events.map((ev) => {
+          const dateStr = ev.startsAt ? formatEventDate(ev.startsAt) : "";
+          const title = escapeHtml(ev.title) || "Мероприятие";
+          const subtitle = dateStr ? `\n${dateStr}` : "";
+          const text = title + subtitle;
+
+          return [
+            {
+              text,
+              callback_data: `event:${ev._id.toString()}`,
+            },
+          ];
+        });
+
+        const header =
+          "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
+
+        await callTelegramApi("editMessageText", {
+          chat_id: chatId,
+          message_id: callback.message?.message_id,
+          text: header,
+          parse_mode: "HTML",
+          reply_markup: {
+            inline_keyboard: buttons,
+          },
+        });
+
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+        });
+      } catch (error) {
+        console.error("Failed to handle events:list callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Не удалось обновить список мероприятий",
+          show_alert: true,
+        });
+      }
+
+      return;
+    }
+
     // Пользователь отметил, что идёт на мероприятие
     if (data.startsWith("event_join:")) {
       const eventId = data.slice("event_join:".length).trim();
@@ -359,12 +427,30 @@ export async function handleTelegramUpdate(update) {
           text = lines.join("\n");
         }
 
+        const replyMarkup = {
+          inline_keyboard: [
+            [
+              {
+                text: "Назад к мероприятию",
+                callback_data: `event:${event._id.toString()}`,
+              },
+            ],
+            [
+              {
+                text: "Назад к списку мероприятий",
+                callback_data: "events:list",
+              },
+            ],
+          ],
+        };
+
         // Не спамим новыми сообщениями — обновляем существующее
         await callTelegramApi("editMessageText", {
           chat_id: chatId,
           message_id: callback.message?.message_id,
           text,
           parse_mode: "HTML",
+          reply_markup: replyMarkup,
         });
 
         await callTelegramApi("answerCallbackQuery", {
@@ -449,11 +535,19 @@ export async function handleTelegramUpdate(update) {
           },
         ];
 
+        const thirdRow = [
+          {
+            text: "Назад к списку мероприятий",
+            callback_data: "events:list",
+          },
+        ];
+
         const inlineKeyboard = [];
         if (firstRow.length) {
           inlineKeyboard.push(firstRow);
         }
         inlineKeyboard.push(secondRow);
+        inlineKeyboard.push(thirdRow);
 
         const replyMarkup =
           inlineKeyboard.length > 0
