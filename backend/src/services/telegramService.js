@@ -260,20 +260,37 @@ export async function handleTelegramUpdate(update) {
         const text = lines.join("\n");
 
         const routeUrl = buildYandexRouteUrl(event);
-        const replyMarkup = routeUrl
-          ? {
-              inline_keyboard: [
-                [
-                  {
-                    text: "Построить маршрут",
-                    url: routeUrl,
-                  },
-                ],
-              ],
-            }
-          : undefined;
+        const webAppUrl =
+          TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
 
-        await sendTelegramMessage(chatId, text, replyMarkup ? { reply_markup: replyMarkup } : {});
+        const inlineButtons = [];
+
+        if (routeUrl) {
+          inlineButtons.push({
+            text: "Построить маршрут",
+            url: routeUrl,
+          });
+        }
+
+        inlineButtons.push({
+          text: "Открыть в приложении",
+          web_app: {
+            url: webAppUrl,
+          },
+        });
+
+        const replyMarkup =
+          inlineButtons.length > 0
+            ? {
+                inline_keyboard: [inlineButtons],
+              }
+            : undefined;
+
+        await sendTelegramMessage(
+          chatId,
+          text,
+          replyMarkup ? { reply_markup: replyMarkup } : {}
+        );
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
