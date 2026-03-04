@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import Event from "../models/Event.js";
+import User from "../models/User.js";
+import Chat from "../models/Chat.js";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
 const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
@@ -220,10 +222,145 @@ export async function handleTelegramUpdate(update) {
     const data = callback.data || "";
     const chatId = callback.message?.chat?.id;
 
+    const telegramUserId = callback.from?.id ? String(callback.from.id) : null;
+
     if (!chatId) {
       return;
     }
 
+    // Пользователь отметил, что идёт на мероприятие
+    if (data.startsWith("event_join:")) {
+      const eventId = data.slice("event_join:".length).trim();
+
+      try {
+        if (!telegramUserId) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Не удалось определить пользователя Telegram.",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const user = await User.findOne({ telegramId: telegramUserId });
+        if (!user) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Сначала откройте мини‑приложение Sektor, чтобы привязать аккаунт.",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const event = await Event.findById(eventId);
+        if (!event) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Мероприятие не найдено",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const alreadyParticipant = event.participants.some(
+          (id) => id.toString() === user._id.toString()
+        );
+
+        if (!alreadyParticipant) {
+          event.participants.push(user._id);
+          await event.save();
+
+          if (event.chatId) {
+            await Chat.updateOne(
+              { _id: event.chatId },
+              { $addToSet: { members: user._id } }
+            );
+          }
+
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Вы записаны на мероприятие!",
+            show_alert: false,
+          });
+        } else {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Вы уже записаны на это мероприятие.",
+            show_alert: false,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to handle event_join callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Ошибка при записи на мероприятие",
+          show_alert: true,
+        });
+      }
+
+      return;
+    }
+
+    // Пользователь запросил список участников мероприятия
+    if (data.startsWith("event_participants:")) {
+      const eventId = data.slice("event_participants:".length).trim();
+
+      try {
+        const event = await Event.findById(eventId).populate(
+          "participants",
+          "name"
+        );
+
+        if (!event) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Мероприятие не найдено",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const participants = Array.isArray(event.participants)
+          ? event.participants
+          : [];
+
+        if (!participants.length) {
+          await sendTelegramMessage(
+            chatId,
+            "На это мероприятие пока никто не записался."
+          );
+        } else {
+          const lines = [];
+          lines.push("Участники мероприятия:");
+          lines.push("");
+
+          for (const p of participants) {
+            const name =
+              (p && p.name && String(p.name).trim()) ||
+              "Участник";
+            lines.push(`• ${escapeHtml(name)}`);
+          }
+
+          const text = lines.join("\n");
+          await sendTelegramMessage(chatId, text);
+        }
+
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+        });
+      } catch (error) {
+        console.error("Failed to handle event_participants callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Ошибка при получении списка участников",
+          show_alert: true,
+        });
+      }
+
+      return;
+    }
+
+    // Показ подробностей мероприятия
     if (data.startsWith("event:")) {
       const eventId = data.slice("event:".length).trim();
 
@@ -263,26 +400,43 @@ export async function handleTelegramUpdate(update) {
         const webAppUrl =
           TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
 
-        const inlineButtons = [];
+        const firstRow = [];
 
         if (routeUrl) {
-          inlineButtons.push({
+          firstRow.push({
             text: "Построить маршрут",
             url: routeUrl,
           });
         }
 
-        inlineButtons.push({
+        firstRow.push({
           text: "Открыть в приложении",
           web_app: {
             url: webAppUrl,
           },
         });
 
+        const secondRow = [
+          {
+            text: "Я иду",
+            callback_data: `event_join:${event._id.toString()}`,
+          },
+          {
+            text: "Список участников",
+            callback_data: `event_participants:${event._id.toString()}`,
+          },
+        ];
+
+        const inlineKeyboard = [];
+        if (firstRow.length) {
+          inlineKeyboard.push(firstRow);
+        }
+        inlineKeyboard.push(secondRow);
+
         const replyMarkup =
-          inlineButtons.length > 0
+          inlineKeyboard.length > 0
             ? {
-                inline_keyboard: [inlineButtons],
+                inline_keyboard: inlineKeyboard,
               }
             : undefined;
 
