@@ -5,7 +5,7 @@ import { sendTelegramMessage } from "./telegramService.js";
 const ONE_HOUR_MS = 60 * 60 * 1000;
 const REMINDER_24H_MS = 24 * ONE_HOUR_MS;
 const REMINDER_6H_MS = 6 * ONE_HOUR_MS;
-const CHECK_INTERVAL_MS = 5 * 60 * 1000; // каждые 5 минут
+const CHECK_INTERVAL_MS = 60 * 1000; // каждую минуту
 const WINDOW_MS = 5 * 60 * 1000; // ±5 минут от нужного момента
 
 function formatEventDateTime(date) {
