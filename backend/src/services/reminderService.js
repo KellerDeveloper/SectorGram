@@ -102,38 +102,37 @@ async function processEventsForOffset(offsetMs, flagField, hoursBefore) {
       const text = buildReminderText(event, hoursBefore);
       const routeUrl = buildYandexRouteUrl(event);
 
+      // Клавиатура с доп. действиями (одинаковая для 24ч и 6ч напоминаний)
+      const inlineKeyboard = [
+        [
+          {
+            text: "Напомнить за 1 час",
+            callback_data: `event_remind_1h:${event._id.toString()}`,
+          },
+          {
+            text: "Напомнить за 3 часа",
+            callback_data: `event_remind_3h:${event._id.toString()}`,
+          },
+        ],
+      ];
+
+      if (routeUrl) {
+        inlineKeyboard.push([
+          {
+            text: "Построить маршрут",
+            url: routeUrl,
+          },
+        ]);
+      }
+
+      const extra = {
+        reply_markup: {
+          inline_keyboard: inlineKeyboard,
+        },
+      };
+
       for (const user of telegramUsers) {
         try {
-          const extra =
-            hoursBefore === 6
-              ? {
-                  reply_markup: {
-                    inline_keyboard: [
-                      [
-                        {
-                          text: "Напомнить за 1 час",
-                          callback_data: `event_remind_1h:${event._id.toString()}`,
-                        },
-                        {
-                          text: "Напомнить за 3 часа",
-                          callback_data: `event_remind_3h:${event._id.toString()}`,
-                        },
-                      ],
-                      ...(routeUrl
-                        ? [
-                            [
-                              {
-                                text: "Построить маршрут",
-                                url: routeUrl,
-                              },
-                            ],
-                          ]
-                        : []),
-                    ],
-                  },
-                }
-              : {};
-
           await sendTelegramMessage(user.telegramId, text, extra);
         } catch (error) {
           // Логируем, но продолжаем другим пользователям
