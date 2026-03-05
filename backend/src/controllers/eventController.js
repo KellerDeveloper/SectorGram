@@ -175,9 +175,8 @@ export async function downloadIcs(req, res, next) {
     const encodedUnicode = encodeURIComponent(unicodeFileName);
     const contentDisposition = `attachment; filename="${asciiFileName}"; filename*=UTF-8''${encodedUnicode}`;
 
-    // Используем application/octet-stream, чтобы Telegram Bot API корректно
-    // воспринимал URL как файл-документ, а не «веб‑страницу».
-    res.setHeader("Content-Type", "application/octet-stream");
+    // Для браузеров и iOS корректный тип — text/calendar.
+    res.setHeader("Content-Type", "text/calendar; charset=utf-8");
     res.setHeader("Content-Disposition", contentDisposition);
     res.send(icsContent);
   } catch (error) {
