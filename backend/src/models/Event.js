@@ -61,6 +61,17 @@ const eventSchema = new mongoose.Schema(
       default: "scheduled",
       index: true,
     },
+    // Флаги, чтобы не отправлять напоминания несколько раз
+    reminder24hSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    reminder6hSent: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

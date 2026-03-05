@@ -12,6 +12,7 @@ import { createApp } from "./app.js";
 import User from "./models/User.js";
 import Chat from "./models/Chat.js";
 import Message from "./models/Message.js";
+import { startEventRemindersScheduler } from "./services/reminderService.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Загружаем .env из backend/, даже если процесс запущен из корня проекта
@@ -1226,6 +1227,9 @@ app.use(errorHandler);
 // Подключение к БД и запуск сервера
 connectDatabase()
   .then(() => {
+    // Запускаем планировщик напоминаний о событиях
+    startEventRemindersScheduler();
+
     server.listen(PORT, () => {
       console.log(`Backend listening on http://localhost:${PORT}`);
     });
