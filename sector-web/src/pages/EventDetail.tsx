@@ -5,6 +5,7 @@ import type { Event } from "../api/events";
 import { useAuth } from "../context/AuthContext";
 import { YandexEventMap } from "../components/YandexEventMap";
 import { openYandexMapsPoint, openYandexMapsRoute } from "../utils/yandexMaps";
+import { API_BASE } from "../api/client";
 import styles from "./EventDetail.module.css";
 
 export function EventDetail() {
@@ -155,6 +156,17 @@ export function EventDetail() {
             </Link>
           )}
           <div className={styles.actions}>
+            <button
+              type="button"
+              className={styles.buttonSecondary}
+              onClick={() => {
+                if (!event.id) return;
+                const url = `${API_BASE}/events/${event.id}/ics`;
+                window.location.href = url;
+              }}
+            >
+              Добавить в календарь
+            </button>
             {!isParticipant && !isCreator && (
               <button
                 type="button"

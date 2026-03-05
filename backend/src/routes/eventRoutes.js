@@ -8,6 +8,7 @@ import {
   leave,
   cancel,
   update,
+  downloadIcs,
 } from "../controllers/eventController.js";
 import {
   createEventValidation,
@@ -16,6 +17,9 @@ import {
 } from "../validators/eventValidators.js";
 
 const router = express.Router();
+
+// Публичный маршрут для скачивания .ics без авторизации
+router.get("/:id/ics", eventIdParamValidation, downloadIcs);
 
 router.use(authMiddleware);
 
