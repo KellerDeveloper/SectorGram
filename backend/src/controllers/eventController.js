@@ -36,11 +36,15 @@ function escapeICalText(text) {
 
 function buildEventIcsFileName(event) {
   const rawTitle = event.title || "Событие";
-  const title = String(rawTitle)
-    .trim()
+  const sanitizedTitle = String(rawTitle)
+    // убираем управляющие символы, переводы строк и пр.
+    .replace(/[\x00-\x1F\x7F]+/g, " ")
+    // убираем символы, недопустимые в имени файла
     .replace(/[\\/:*?"<>|]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
+  const title = sanitizedTitle || "Событие";
 
   const startsAt = event.startsAt ? new Date(event.startsAt) : null;
   let dateSuffix = "";
@@ -161,10 +165,7 @@ export async function downloadIcs(req, res, next) {
     const fileName = buildEventIcsFileName(event);
 
     res.setHeader("Content-Type", "text/calendar; charset=utf-8");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${String(fileName).replace(/"/g, '\\"')}"`
-    );
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.send(icsContent);
   } catch (error) {
     next(error);
