@@ -164,7 +164,9 @@ export async function downloadIcs(req, res, next) {
 
     const fileName = buildEventIcsFileName(event);
 
-    res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+    // Используем application/octet-stream, чтобы Telegram Bot API корректно
+    // воспринимал URL как файл-документ, а не «веб‑страницу».
+    res.setHeader("Content-Type", "application/octet-stream");
     res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
     res.send(icsContent);
   } catch (error) {
