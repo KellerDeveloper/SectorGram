@@ -17,11 +17,6 @@ const TELEGRAM_API_BASE = TELEGRAM_BOT_TOKEN
   ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
   : null;
 
-const PUBLIC_API_BASE_URL =
-  (process.env.PUBLIC_API_BASE_URL &&
-    process.env.PUBLIC_API_BASE_URL.trim().replace(/\/+$/, "")) ||
-  "https://api.sektor.moscow";
-
 async function callTelegramApi(method, payload) {
   if (!TELEGRAM_API_BASE) {
     console.error(
@@ -776,16 +771,9 @@ export async function handleTelegramUpdate(update) {
 
         firstRow.push(buildOpenAppButton(chatType, "Открыть приложение"));
 
-        const calendarUrl = `${PUBLIC_API_BASE_URL}/events/${event._id.toString()}/ics`;
-        const calendarOpenRow = [
+        const calendarRow = [
           {
-            text: "Открыть в календаре",
-            url: calendarUrl,
-          },
-        ];
-        const calendarFileRow = [
-          {
-            text: "Файл .ics",
+            text: "Добавить в календарь",
             callback_data: `event_ics:${event._id.toString()}`,
           },
         ];
@@ -812,8 +800,7 @@ export async function handleTelegramUpdate(update) {
         if (firstRow.length) {
           inlineKeyboard.push(firstRow);
         }
-        inlineKeyboard.push(calendarOpenRow);
-        inlineKeyboard.push(calendarFileRow);
+        inlineKeyboard.push(calendarRow);
         inlineKeyboard.push(secondRow);
         inlineKeyboard.push(thirdRow);
 
