@@ -34,7 +34,7 @@ function escapeICalText(text) {
     .replace(/\r?\n/g, "\\n");
 }
 
-function buildEventIcsFileName(event) {
+function buildEventIcsFileNames(event) {
   const rawTitle = event.title || "Событие";
   const sanitizedTitle = String(rawTitle)
     // убираем управляющие символы, переводы строк и пр.
@@ -57,9 +57,18 @@ function buildEventIcsFileName(event) {
     dateSuffix = ` ${yyyy}-${mm}-${dd}`;
   }
 
-  const base = (title + dateSuffix).trim() || "event";
+  const baseUnicode = (title + dateSuffix).trim() || "event";
+  const unicodeFileName = `${baseUnicode}.ics`;
 
-  return `${base}.ics`;
+  // ASCII-представление для безопасного header filename=
+  const baseAscii =
+    baseUnicode
+      .replace(/[^\x20-\x7E]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim() || "event";
+  const asciiFileName = `${baseAscii}.ics`;
+
+  return { unicodeFileName, asciiFileName };
 }
 
 export async function create(req, res, next) {
@@ -162,12 +171,14 @@ export async function downloadIcs(req, res, next) {
 
     const icsContent = lines.join("\r\n");
 
-    const fileName = buildEventIcsFileName(event);
+    const { unicodeFileName, asciiFileName } = buildEventIcsFileNames(event);
+    const encodedUnicode = encodeURIComponent(unicodeFileName);
+    const contentDisposition = `attachment; filename="${asciiFileName}"; filename*=UTF-8''${encodedUnicode}`;
 
     // Используем application/octet-stream, чтобы Telegram Bot API корректно
     // воспринимал URL как файл-документ, а не «веб‑страницу».
     res.setHeader("Content-Type", "application/octet-stream");
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Content-Disposition", contentDisposition);
     res.send(icsContent);
   } catch (error) {
     next(error);
