@@ -17,11 +17,6 @@ const TELEGRAM_API_BASE = TELEGRAM_BOT_TOKEN
   ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
   : null;
 
-const PUBLIC_API_BASE_URL =
-  (process.env.PUBLIC_API_BASE_URL &&
-    process.env.PUBLIC_API_BASE_URL.trim().replace(/\/+$/, "")) ||
-  "https://api.sektor.moscow";
-
 async function callTelegramApi(method, payload) {
   if (!TELEGRAM_API_BASE) {
     console.error(
@@ -210,6 +205,112 @@ function buildYandexRouteUrl(event) {
   return null;
 }
 
+function formatDateToICalUtc(date) {
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) {
+    return "";
+  }
+
+  const pad = (n) => String(n).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  const mm = pad(d.getUTCMonth() + 1);
+  const dd = pad(d.getUTCDate());
+  const hh = pad(d.getUTCHours());
+  const mi = pad(d.getUTCMinutes());
+  const ss = pad(d.getUTCSeconds());
+
+  return `${yyyy}${mm}${dd}T${hh}${mi}${ss}Z`;
+}
+
+function escapeICalText(text) {
+  if (!text) return "";
+  return String(text)
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r?\n/g, "\\n");
+}
+
+function buildEventIcsForTelegram(event) {
+  const startsAt = event.startsAt ? new Date(event.startsAt) : null;
+  const endsAt = event.endsAt ? new Date(event.endsAt) : null;
+
+  if (!startsAt || Number.isNaN(startsAt.getTime())) {
+    return null;
+  }
+
+  const dtStart = formatDateToICalUtc(startsAt);
+  const dtEnd = formatDateToICalUtc(
+    endsAt && !Number.isNaN(endsAt.getTime())
+      ? endsAt
+      : new Date(startsAt.getTime() + 2 * 60 * 60 * 1000)
+  );
+
+  const now = new Date();
+  const dtStamp = formatDateToICalUtc(now);
+
+  const uidDomain = "sektor.moscow";
+  const uid = `${event._id?.toString?.() || event.id}@${uidDomain}`;
+
+  const summary = escapeICalText(event.title || "Событие");
+  const description = escapeICalText(event.description || "");
+  const location = escapeICalText(event.place || "");
+
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Sektor//Events//RU",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VEVENT",
+    `UID:${uid}`,
+    `DTSTAMP:${dtStamp}`,
+    `DTSTART:${dtStart}`,
+    `DTEND:${dtEnd}`,
+    `SUMMARY:${summary}`,
+    description ? `DESCRIPTION:${description}` : null,
+    location ? `LOCATION:${location}` : null,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].filter(Boolean);
+
+  const icsContent = lines.join("\r\n");
+
+  const rawTitle = event.title || "Событие";
+  const sanitizedTitle = String(rawTitle)
+    .replace(/[\x00-\x1F\x7F]+/g, " ")
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const title = sanitizedTitle || "Событие";
+
+  let dateSuffix = "";
+  if (startsAt && !Number.isNaN(startsAt.getTime())) {
+    const pad = (n) => String(n).padStart(2, "0");
+    const dd = pad(startsAt.getDate());
+    const mm = pad(startsAt.getMonth() + 1);
+    const yyyy = startsAt.getFullYear();
+    dateSuffix = ` ${yyyy}-${mm}-${dd}`;
+  }
+
+  const baseUnicode = (title + dateSuffix).trim() || "event";
+  const unicodeFileName = `${baseUnicode}.ics`;
+
+  const baseAscii =
+    baseUnicode
+      .replace(/[^\x20-\x7E]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim() || "event";
+  const asciiFileName = `${baseAscii}.ics`;
+
+  return {
+    content: icsContent,
+    unicodeFileName,
+    asciiFileName,
+  };
+}
+
 export async function notifyNewEventCreated(event) {
   if (!TELEGRAM_EVENT_CHAT_ID) {
     return;
@@ -371,13 +472,68 @@ export async function handleTelegramUpdate(update) {
       const eventId = data.slice("event_ics:".length).trim();
 
       try {
-        const calendarUrl = `${PUBLIC_API_BASE_URL}/events/${eventId}/ics`;
+        const event = await Event.findById(eventId);
+        if (!event) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Мероприятие не найдено",
+            show_alert: true,
+          });
+          return;
+        }
 
-        await callTelegramApi("sendDocument", {
-          chat_id: chatId,
-          document: calendarUrl,
-          caption: "Файл события для добавления в календарь",
+        const ics = buildEventIcsForTelegram(event);
+        if (!ics) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "У события не задана корректная дата",
+            show_alert: true,
+          });
+          return;
+        }
+
+        if (!TELEGRAM_API_BASE) {
+          console.error("Cannot send ICS: TELEGRAM_BOT_TOKEN is not configured.");
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Ошибка отправки файла календаря",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const { content, unicodeFileName } = ics;
+
+        const form = new FormData();
+        form.append("chat_id", String(chatId));
+        form.append(
+          "caption",
+          "Файл события для добавления в календарь"
+        );
+
+        const blob = new Blob([content], { type: "text/calendar" });
+        form.append("document", blob, unicodeFileName);
+
+        const response = await fetch(`${TELEGRAM_API_BASE}/sendDocument`, {
+          method: "POST",
+          body: form,
         });
+
+        const dataJson = await response.json().catch(() => null);
+
+        if (!response.ok || !dataJson || dataJson.ok === false) {
+          console.error("Telegram sendDocument error:", {
+            status: response.status,
+            data: dataJson,
+          });
+
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Не удалось отправить файл календаря",
+            show_alert: true,
+          });
+          return;
+        }
 
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
@@ -386,7 +542,7 @@ export async function handleTelegramUpdate(update) {
         console.error("Failed to handle event_ics callback:", error);
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
-          text: "Не удалось отправить файл календаря",
+          text: "Ошибка при отправке файла календаря",
           show_alert: true,
         });
       }
