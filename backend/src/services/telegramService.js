@@ -366,6 +366,34 @@ export async function handleTelegramUpdate(update) {
       return;
     }
 
+    // Отправка файла события (.ics) в чат
+    if (data.startsWith("event_ics:")) {
+      const eventId = data.slice("event_ics:".length).trim();
+
+      try {
+        const calendarUrl = `${PUBLIC_API_BASE_URL}/events/${eventId}/ics`;
+
+        await callTelegramApi("sendDocument", {
+          chat_id: chatId,
+          document: calendarUrl,
+          caption: "Файл события для добавления в календарь",
+        });
+
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+        });
+      } catch (error) {
+        console.error("Failed to handle event_ics callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Не удалось отправить файл календаря",
+          show_alert: true,
+        });
+      }
+
+      return;
+    }
+
     // Пользователь отметил, что идёт на мероприятие
     if (data.startsWith("event_join:")) {
       const eventId = data.slice("event_join:".length).trim();
@@ -587,11 +615,10 @@ export async function handleTelegramUpdate(update) {
 
         firstRow.push(buildOpenAppButton(chatType, "Открыть приложение"));
 
-        const calendarUrl = `${PUBLIC_API_BASE_URL}/events/${event._id.toString()}/ics`;
         const calendarRow = [
           {
             text: "Добавить в календарь",
-            url: calendarUrl,
+            callback_data: `event_ics:${event._id.toString()}`,
           },
         ];
 

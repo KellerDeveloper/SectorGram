@@ -34,6 +34,30 @@ function escapeICalText(text) {
     .replace(/\r?\n/g, "\\n");
 }
 
+function buildEventIcsFileName(event) {
+  const rawTitle = event.title || "Событие";
+  const title = String(rawTitle)
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const startsAt = event.startsAt ? new Date(event.startsAt) : null;
+  let dateSuffix = "";
+
+  if (startsAt && !Number.isNaN(startsAt.getTime())) {
+    const pad = (n) => String(n).padStart(2, "0");
+    const dd = pad(startsAt.getDate());
+    const mm = pad(startsAt.getMonth() + 1);
+    const yyyy = startsAt.getFullYear();
+    dateSuffix = ` ${yyyy}-${mm}-${dd}`;
+  }
+
+  const base = (title + dateSuffix).trim() || "event";
+
+  return `${base}.ics`;
+}
+
 export async function create(req, res, next) {
   try {
     const creatorId = req.user.id;
@@ -134,10 +158,12 @@ export async function downloadIcs(req, res, next) {
 
     const icsContent = lines.join("\r\n");
 
+    const fileName = buildEventIcsFileName(event);
+
     res.setHeader("Content-Type", "text/calendar; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="event-${event.id || eventId}.ics"`
+      `attachment; filename="${String(fileName).replace(/"/g, '\\"')}"`
     );
     res.send(icsContent);
   } catch (error) {
