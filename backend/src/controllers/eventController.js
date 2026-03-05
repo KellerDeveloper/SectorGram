@@ -154,7 +154,7 @@ export async function downloadIcs(req, res, next) {
     const lines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//Sektor//Events//RU",
+      "PRODID:-//SEKTOR//Events//RU",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       "BEGIN:VEVENT",

@@ -137,7 +137,7 @@ function App() {
     e.preventDefault()
     if (!user) {
       setError(
-        'Нет авторизации. Войдите в Sektor в браузере, чтобы создавать мероприятия.',
+        'Нет авторизации. Войдите в SEKTOR в браузере, чтобы создавать мероприятия.',
       )
       return
     }
@@ -197,7 +197,7 @@ function App() {
 
   async function handleDeleteEvent(ev: Event) {
     if (!user) {
-      setError('Нет авторизации. Войдите в Sektor в браузере.')
+      setError('Нет авторизации. Войдите в SEKTOR в браузере.')
       return
     }
     if (actionEventId) return
@@ -241,7 +241,7 @@ function App() {
 
   async function handleEditEvent(ev: Event) {
     if (!user) {
-      setError('Нет авторизации. Войдите в Sektor в браузере.')
+      setError('Нет авторизации. Войдите в SEKTOR в браузере.')
       return
     }
     if (editing) return
@@ -332,7 +332,7 @@ function App() {
         if (cancelled) return
         if (err instanceof Error && (err as Error & { status?: number }).status === 401) {
           setError(
-            'Нет авторизации. Откройте мини‑приложение из Telegram или войдите в Sektor в браузере.',
+            'Нет авторизации. Откройте мини‑приложение из Telegram или войдите в SEKTOR в браузере.',
           )
         } else if (err instanceof Error) {
           setError(err.message)
@@ -373,7 +373,7 @@ function App() {
   async function handleToggleParticipation(ev: Event) {
     if (!user) {
       setError(
-        'Нет авторизации. Войдите в Sektor в браузере, чтобы отмечаться на событиях.',
+        'Нет авторизации. Войдите в SEKTOR в браузере, чтобы отмечаться на событиях.',
       )
       return
     }

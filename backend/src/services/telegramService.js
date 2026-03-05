@@ -260,7 +260,7 @@ function buildEventIcsForTelegram(event) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Sektor//Events//RU",
+      "PRODID:-//SEKTOR//Events//RU",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -445,7 +445,7 @@ export async function handleTelegramUpdate(update) {
         );
 
         const header =
-          "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
+          "Ближайшие мероприятия SEKTOR.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
         await replaceCallbackMessage(callback, header, {
           reply_markup: {
@@ -489,7 +489,7 @@ export async function handleTelegramUpdate(update) {
         if (!user) {
           await callTelegramApi("answerCallbackQuery", {
             callback_query_id: callback.id,
-            text: "Сначала откройте мини‑приложение Sektor, чтобы привязать аккаунт.",
+            text: "Сначала откройте мини‑приложение SEKTOR, чтобы привязать аккаунт.",
             show_alert: true,
           });
           return;
@@ -662,7 +662,7 @@ export async function handleTelegramUpdate(update) {
         if (!user) {
           await callTelegramApi("answerCallbackQuery", {
             callback_query_id: callback.id,
-            text: "Сначала откройте мини‑приложение Sektor, чтобы привязать аккаунт.",
+            text: "Сначала откройте мини‑приложение SEKTOR, чтобы привязать аккаунт.",
             show_alert: true,
           });
           return;
@@ -948,7 +948,7 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта Sektor. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
+      "Это бот проекта SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 
@@ -1004,7 +1004,7 @@ export async function handleTelegramUpdate(update) {
       });
 
       const header =
-        "Ближайшие мероприятия Sektor.\nВыберите одно из списка, чтобы посмотреть подробности:";
+        "Ближайшие мероприятия SEKTOR.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
       const openButtonInEventsList = buildOpenAppButton(
         chatType,

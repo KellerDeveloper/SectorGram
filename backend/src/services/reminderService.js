@@ -31,7 +31,7 @@ function buildReminderText(event, hoursBefore) {
   const dateStr = event.startsAt ? formatEventDateTime(event.startsAt) : "";
 
   const lines = [];
-  lines.push(`Напоминание о мероприятии Sektor ${when}.`);
+  lines.push(`Напоминание о мероприятии SEKTOR ${when}.`);
   if (event.title) {
     lines.push("");
     lines.push(`Название: ${event.title}`);
@@ -44,7 +44,7 @@ function buildReminderText(event, hoursBefore) {
   }
   lines.push("");
   lines.push(
-    "Откройте мини‑приложение Sektor, чтобы посмотреть детали события."
+    "Откройте мини‑приложение SEKTOR, чтобы посмотреть детали события."
   );
 
   return lines.join("\n");

@@ -188,7 +188,7 @@ npm run build
    TELEGRAM_WEBAPP_URL=https://sektor.moscow/tg
    ```
 
-   Это URL, который будет использовать бот в кнопке «Открыть Sektor», а mini app — для проверки `initData`.
+   Это URL, который будет использовать бот в кнопке «Открыть SEKTOR», а mini app — для проверки `initData`.
 
 4. Убедитесь, что webhook бота смотрит на ваш API:
 

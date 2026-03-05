@@ -35,7 +35,7 @@ export function Register() {
       <div className={styles.card}>
         <div className={styles.logoWrap}>
           <img src="/logo.png" alt="" className={styles.logo} width={809} height={254} />
-          <h1 className={styles.title}>Sektor</h1>
+          <h1 className={styles.title}>SEKTOR</h1>
         </div>
         <p className={styles.subtitle}>Регистрация</p>
         <form onSubmit={handleSubmit} className={styles.form}>
