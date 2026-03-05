@@ -2,6 +2,7 @@ import crypto from "crypto";
 import Event from "../models/Event.js";
 import User from "../models/User.js";
 import Chat from "../models/Chat.js";
+import EventReminder from "../models/EventReminder.js";
 
 const { TELEGRAM_BOT_TOKEN, TELEGRAM_WEBAPP_URL } = process.env;
 const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || null;
@@ -460,6 +461,99 @@ export async function handleTelegramUpdate(update) {
         await callTelegramApi("answerCallbackQuery", {
           callback_query_id: callback.id,
           text: "Не удалось обновить список мероприятий",
+          show_alert: true,
+        });
+      }
+
+      return;
+    }
+
+    // Пользователь запросил персональное напоминание за 1 час / 3 часа
+    if (data.startsWith("event_remind_1h:") || data.startsWith("event_remind_3h:")) {
+      const isOneHour = data.startsWith("event_remind_1h:");
+      const eventId = data
+        .slice(isOneHour ? "event_remind_1h:".length : "event_remind_3h:".length)
+        .trim();
+
+      try {
+        if (!telegramUserId) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Не удалось определить пользователя Telegram.",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const user = await User.findOne({ telegramId: telegramUserId });
+        if (!user) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Сначала откройте мини‑приложение Sektor, чтобы привязать аккаунт.",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const event = await Event.findById(eventId);
+        if (!event || !event.startsAt) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Мероприятие не найдено или без даты",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const hours = isOneHour ? 1 : 3;
+        const startsAt = new Date(event.startsAt);
+        if (Number.isNaN(startsAt.getTime())) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: "Неверная дата мероприятия",
+            show_alert: true,
+          });
+          return;
+        }
+
+        const remindAt = new Date(
+          startsAt.getTime() - hours * 60 * 60 * 1000
+        );
+        const now = new Date();
+
+        // Если время напоминания уже прошло — сразу отвечаем текстом
+        if (remindAt.getTime() <= now.getTime() + 60 * 1000) {
+          await callTelegramApi("answerCallbackQuery", {
+            callback_query_id: callback.id,
+            text: `Событие уже слишком скоро для напоминания за ${hours} час(а)`,
+            show_alert: true,
+          });
+          return;
+        }
+
+        await EventReminder.findOneAndUpdate(
+          {
+            eventId: event._id,
+            userId: user._id,
+            type: isOneHour ? "1h" : "3h",
+          },
+          {
+            remindAt,
+            sent: false,
+          },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: `Напоминание за ${hours} час(а) установлено`,
+          show_alert: false,
+        });
+      } catch (error) {
+        console.error("Failed to handle event_remind callback:", error);
+        await callTelegramApi("answerCallbackQuery", {
+          callback_query_id: callback.id,
+          text: "Не удалось установить напоминание",
           show_alert: true,
         });
       }
