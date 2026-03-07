@@ -131,6 +131,15 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
     ...extra,
   };
 
+  // В чате событий бот пишет только в заданную тему (форум-топик)
+  if (
+    TELEGRAM_EVENT_CHAT_ID != null &&
+    TELEGRAM_EVENT_TOPIC_ID != null &&
+    String(chatId) === String(TELEGRAM_EVENT_CHAT_ID)
+  ) {
+    payload.message_thread_id = payload.message_thread_id ?? TELEGRAM_EVENT_TOPIC_ID;
+  }
+
   return callTelegramApi("sendMessage", payload);
 }
 
@@ -607,6 +616,14 @@ export async function handleTelegramUpdate(update) {
 
         const blob = new Blob([content], { type: "text/calendar" });
         form.append("document", blob, unicodeFileName);
+
+        if (
+          TELEGRAM_EVENT_CHAT_ID != null &&
+          TELEGRAM_EVENT_TOPIC_ID != null &&
+          String(chatId) === String(TELEGRAM_EVENT_CHAT_ID)
+        ) {
+          form.append("message_thread_id", String(TELEGRAM_EVENT_TOPIC_ID));
+        }
 
         const response = await fetch(`${TELEGRAM_API_BASE}/sendDocument`, {
           method: "POST",
