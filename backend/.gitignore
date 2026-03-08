@@ -3,3 +3,6 @@ node_modules/
 *.log
 .DS_Store
 package-lock.json
+# Ключи Yandex Cloud (не коммитить)
+authorized_key.json
+*authorized_key*.json
