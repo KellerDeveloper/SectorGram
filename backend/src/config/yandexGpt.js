@@ -34,8 +34,35 @@ function loadServiceAccountKey() {
     raw = YANDEX_SERVICE_ACCOUNT_KEY;
   }
   if (!raw) return null;
+
+  function repairKeyJson(str) {
+    if (typeof str !== "string") return str;
+    return str
+      .replace(
+        /"private_key"\s*:\s*"([\s\S]*?)"(?=\s*[,}])/g,
+        (_, val) => '"private_key":"' + val.replace(/\r?\n/g, "\\n") + '"'
+      )
+      .replace(
+        /"public_key"\s*:\s*"([\s\S]*?)"(?=\s*[,}])/g,
+        (_, val) => '"public_key":"' + val.replace(/\r?\n/g, "\\n") + '"'
+      );
+  }
+
   try {
-    const key = typeof raw === "string" ? JSON.parse(raw) : raw;
+    let key;
+    if (typeof raw === "string") {
+      try {
+        key = JSON.parse(raw);
+      } catch (parseErr) {
+        if (/Bad control character|Unexpected token/.test(parseErr.message)) {
+          key = JSON.parse(repairKeyJson(raw));
+        } else {
+          throw parseErr;
+        }
+      }
+    } else {
+      key = raw;
+    }
     const id = key.service_account_id?.trim();
     let pem = key.private_key?.trim() || "";
     if (!id || !pem) {
