@@ -11,6 +11,7 @@ import userRoutes from "./routes/userRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import mediaRoutes from "./routes/mediaRoutes.js";
 import eventRoutes from "./routes/eventRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { getHttpCorsOptions } from "./config/cors.js";
 
@@ -54,6 +55,7 @@ export function createApp() {
   app.use("/notifications", notificationRoutes);
   app.use("/media", mediaRoutes);
   app.use("/events", eventRoutes);
+  app.use("/ai", aiRoutes);
 
   // Централизованный обработчик ошибок — в самом конце цепочки middleware
   app.use(errorHandler);
