@@ -64,6 +64,38 @@ export async function suggestEventDescription(req, res, next) {
 }
 
 /**
+ * POST /ai/suggest-meeting-idea
+ * Тело: { city? } — опционально город для контекста
+ * Возвращает: { ideas } — текст с 2–3 идеями куда сходить (название + место)
+ */
+export async function suggestMeetingIdea(req, res, next) {
+  try {
+    const { city = "Москва" } = req.body || {};
+    const cityStr = typeof city === "string" ? city.trim() || "Москва" : "Москва";
+
+    const userPrompt = `Подскажи 2–3 идеи для встречи или мероприятия в городе: ${cityStr}.`;
+    const systemPrompt =
+      "Ты помогаешь придумать идеи, куда сходить с друзьями или коллегами. " +
+      "Ответь списком из 2–3 вариантов. Каждый вариант в одной строке в формате: «Название — Адрес или место». " +
+      "Без нумерации и лишних слов. Пример: Боулинг — ул. Тверская, 1. Пиши на русском.";
+
+    const result = await complete(userPrompt, {
+      systemPrompt,
+      maxTokens: 350,
+      temperature: 0.7,
+    });
+
+    if (result.error) {
+      return res.status(503).json({ error: result.error });
+    }
+
+    res.status(200).json({ ideas: result.text });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /ai/improve-text
  * Тело: { text }
  * Возвращает: { text } или { error }

@@ -164,3 +164,40 @@ backend/
 - [ ] **Неделя 4:** Опционально — Telegram-бот (ответы на вопросы); опционально — улучшение текста напоминаний; документация и мониторинг.
 
 После выполнения плана можно расширять сценарии (например, генерация анонсов для соцсетей, теги мероприятий по описанию и т.д.).
+
+---
+
+## 9. Как проверить
+
+1. **Настройте backend:** в `backend/.env` задайте `YANDEX_FOLDER_ID` и `YANDEX_OAUTH_TOKEN` (см. раздел 2 и инструкцию «Где это найти»).
+
+2. **Запустите backend:** из каталога `backend` выполните `npm run dev` (должен слушать порт 4000 или ваш `PORT`).
+
+3. **Получите JWT:** войдите в приложение через веб/приложение и скопируйте токен из запросов, либо выполните логин через curl:
+   ```bash
+   curl -s -X POST http://localhost:4000/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"ваш@email.com","password":"ваш_пароль"}'
+   ```
+   В ответе возьмите поле `token`.
+
+4. **Проверка доступности:**
+   ```bash
+   curl -s -H "Authorization: Bearer ВАШ_JWT" http://localhost:4000/ai/health | jq
+   ```
+   Ожидается `"ok": true`, `"yandexGpt": "available"`.
+
+5. **Подсказка описания мероприятия:**
+   ```bash
+   curl -s -X POST http://localhost:4000/ai/suggest-event-description \
+     -H "Authorization: Bearer ВАШ_JWT" \
+     -H "Content-Type: application/json" \
+     -d '{"title":"Встреча по проекту","place":"Коворкинг"}' | jq
+   ```
+   Ожидается `"description": "..."` с текстом от YandexGPT.
+
+6. **Скрипт в репозитории:** из каталога `backend`:
+   ```bash
+   AUTH_TOKEN=ваш_jwt node scripts/test-yandex-gpt.js
+   ```
+   Скрипт вызовет `/ai/health` и `/ai/suggest-event-description` и выведет результат.

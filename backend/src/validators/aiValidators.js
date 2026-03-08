@@ -24,6 +24,17 @@ export const suggestEventDescriptionValidation = [
   handleValidationErrors,
 ];
 
+/** POST /ai/suggest-meeting-idea */
+export const suggestMeetingIdeaValidation = [
+  body("city")
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 100 })
+    .withMessage("city не более 100 символов"),
+  handleValidationErrors,
+];
+
 /** POST /ai/improve-text */
 export const improveTextValidation = [
   body("text")

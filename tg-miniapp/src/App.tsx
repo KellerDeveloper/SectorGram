@@ -10,6 +10,7 @@ import {
   updateEvent,
 } from './api/events'
 import { searchPlaces, type YandexPlace } from './api/yandex'
+import { suggestMeetingIdea } from './api/ai'
 import type { CurrentUser } from './api/users'
 import { getCurrentUser } from './api/users'
 import { setToken } from './api/client'
@@ -80,6 +81,8 @@ function App() {
   const [editPlace, setEditPlace] = useState('')
   const [editStartsAt, setEditStartsAt] = useState('')
   const [editDescription, setEditDescription] = useState('')
+  const [ideaLoading, setIdeaLoading] = useState(false)
+  const [ideaText, setIdeaText] = useState<string | null>(null)
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -184,6 +187,7 @@ function App() {
       form.reset()
       setPlaceQuery('')
       setSelectedPlace(null)
+      setIdeaText(null)
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -193,6 +197,50 @@ function App() {
     } finally {
       setCreating(false)
     }
+  }
+
+  async function handleSuggestMeetingIdea() {
+    if (!user || ideaLoading) return
+    setIdeaLoading(true)
+    setIdeaText(null)
+    setError('')
+    try {
+      const { ideas } = await suggestMeetingIdea({ city: 'Москва' })
+      setIdeaText(ideas)
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError('Не удалось получить идеи')
+      }
+    } finally {
+      setIdeaLoading(false)
+    }
+  }
+
+  function applyIdeaLine(line: string) {
+    const trimmed = line.trim()
+    if (!trimmed) return
+    const dash = ' — '
+    const idx = trimmed.indexOf(dash)
+    if (idx !== -1) {
+      const title = trimmed.slice(0, idx).trim()
+      const place = trimmed.slice(idx + dash.length).trim()
+      const form = document.getElementById('create-form') as HTMLFormElement | null
+      if (form) {
+        const titleInput = form.querySelector<HTMLInputElement>('[name="title"]')
+        const placeInput = form.querySelector<HTMLInputElement>('[name="place"]')
+        if (titleInput) titleInput.value = title
+        if (placeInput) placeInput.value = place
+      }
+      setPlaceQuery(place)
+      setSelectedPlace(null)
+    } else {
+      const form = document.getElementById('create-form') as HTMLFormElement | null
+      const titleInput = form?.querySelector<HTMLInputElement>('[name="title"]')
+      if (titleInput) titleInput.value = trimmed
+    }
+    setIdeaText(null)
   }
 
   async function handleDeleteEvent(ev: Event) {
@@ -451,7 +499,34 @@ function App() {
         {!loading && user && showCreateForm && (
           <section className="create-card">
             <h2 className="create-card-title">Новое мероприятие</h2>
-            <form className="create-form" onSubmit={handleCreateEvent}>
+            <button
+              type="button"
+              className="create-idea-button"
+              onClick={handleSuggestMeetingIdea}
+              disabled={ideaLoading}
+            >
+              {ideaLoading ? 'Генерируем идеи…' : 'Посоветовать идею для встречи'}
+            </button>
+            {ideaText && (
+              <div className="create-idea-result">
+                <p className="create-idea-label">Куда сходить:</p>
+                {ideaText
+                  .split('\n')
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+                  .map((line, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      className="create-idea-line"
+                      onClick={() => applyIdeaLine(line)}
+                    >
+                      {line}
+                    </button>
+                  ))}
+              </div>
+            )}
+            <form id="create-form" className="create-form" onSubmit={handleCreateEvent}>
               <div className="create-form-row">
                 <label htmlFor="title">Название</label>
                 <input
@@ -546,7 +621,10 @@ function App() {
                 <button
                   type="button"
                   className="create-cancel"
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={() => {
+                    setShowCreateForm(false)
+                    setIdeaText(null)
+                  }}
                   disabled={creating}
                 >
                   Отмена

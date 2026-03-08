@@ -3,10 +3,12 @@ import { authMiddleware } from "../middleware/authMiddleware.js";
 import {
   health,
   suggestEventDescription,
+  suggestMeetingIdea,
   improveText,
 } from "../controllers/aiController.js";
 import {
   suggestEventDescriptionValidation,
+  suggestMeetingIdeaValidation,
   improveTextValidation,
 } from "../validators/aiValidators.js";
 
@@ -21,6 +23,14 @@ router.post(
   authMiddleware,
   suggestEventDescriptionValidation,
   suggestEventDescription
+);
+
+/** Идеи куда сходить (для встречи) */
+router.post(
+  "/suggest-meeting-idea",
+  authMiddleware,
+  suggestMeetingIdeaValidation,
+  suggestMeetingIdea
 );
 
 /** Улучшение/редактирование текста */
