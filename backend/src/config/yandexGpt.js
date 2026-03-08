@@ -64,6 +64,7 @@ function loadServiceAccountKey() {
       key = raw;
     }
     const id = key.service_account_id?.trim();
+    const keyId = key.id?.trim() || null;
     let pem = key.private_key?.trim() || "";
     if (!id || !pem) {
       console.error("[YandexGPT] В ключе сервисного аккаунта нет service_account_id или private_key");
@@ -90,7 +91,7 @@ function loadServiceAccountKey() {
       console.error("[YandexGPT] В ключе нет валидного PEM (BEGIN/END PRIVATE KEY)");
       return null;
     }
-    serviceAccountKeyData = { serviceAccountId: id, privateKeyPem: pem };
+    serviceAccountKeyData = { serviceAccountId: id, privateKeyPem: pem, keyId };
     return serviceAccountKeyData;
   } catch (err) {
     console.error("[YandexGPT] Ошибка разбора ключа сервисного аккаунта:", err.message);
