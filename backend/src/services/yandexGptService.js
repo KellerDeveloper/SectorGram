@@ -3,6 +3,7 @@
  * Единая точка: получение IAM-токена (OAuth, статический IAM или ключ сервисного аккаунта), запрос completion.
  */
 
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { yandexGptConfig } from "../config/yandexGpt.js";
 
@@ -26,10 +27,21 @@ async function getIamTokenByServiceAccountKey(key) {
     iat: now,
     exp: now + 3600,
   };
-  const pem = key.privateKeyPem.replace(/\\n/g, "\n");
+  const pem = key.privateKeyPem
+    .replace(/\\n/g, "\n")
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .trim();
+  let privateKeyObj;
+  try {
+    privateKeyObj = crypto.createPrivateKey(pem);
+  } catch (err) {
+    console.error("[YandexGPT] Невалидный PEM ключа сервисного аккаунта:", err.message);
+    return null;
+  }
   let signedJwt;
   try {
-    signedJwt = jwt.sign(payload, pem, { algorithm: "RS256" });
+    signedJwt = jwt.sign(payload, privateKeyObj, { algorithm: "RS256" });
   } catch (err) {
     console.error("[YandexGPT] Ошибка подписи JWT по ключу сервисного аккаунта:", err.message);
     return null;
