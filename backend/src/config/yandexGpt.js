@@ -70,6 +70,9 @@ function loadServiceAccountKey() {
       return null;
     }
     pem = pem.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    pem = pem
+      .replace(/-----BEGIN\s+PRIVATE\s+KEY-----/g, "-----BEGIN PRIVATE KEY-----")
+      .replace(/-----END\s+PRIVATE\s+KEY-----/g, "-----END PRIVATE KEY-----");
     const begin = pem.indexOf("-----BEGIN PRIVATE KEY-----");
     if (begin !== -1) pem = pem.slice(begin).trim();
     const end = pem.indexOf("-----END PRIVATE KEY-----");
