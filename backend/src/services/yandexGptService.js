@@ -26,9 +26,10 @@ async function getIamTokenByServiceAccountKey(key) {
     iat: now,
     exp: now + 3600,
   };
+  const pem = key.privateKeyPem.replace(/\\n/g, "\n");
   let signedJwt;
   try {
-    signedJwt = jwt.sign(payload, key.privateKeyPem, { algorithm: "RS256" });
+    signedJwt = jwt.sign(payload, pem, { algorithm: "RS256" });
   } catch (err) {
     console.error("[YandexGPT] Ошибка подписи JWT по ключу сервисного аккаунта:", err.message);
     return null;
