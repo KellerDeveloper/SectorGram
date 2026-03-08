@@ -43,7 +43,7 @@ async function getIamTokenByServiceAccountKey(key) {
   let signedJwt;
   try {
     signedJwt = jwt.sign(payload, privateKeyObj, {
-      algorithm: "RS256",
+      algorithm: "PS256",
       ...(header && { header }),
     });
   } catch (err) {
