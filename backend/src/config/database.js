@@ -25,9 +25,19 @@ mongoose.connection.on("error", (err) => {
   console.error("❌ Ошибка MongoDB:", err);
 });
 
-// Graceful shutdown
+async function closeDatabase() {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.connection.close();
+    console.log("MongoDB соединение закрыто");
+  }
+}
+
 process.on("SIGINT", async () => {
-  await mongoose.connection.close();
-  console.log("MongoDB соединение закрыто через SIGINT");
+  await closeDatabase();
+  process.exit(0);
+});
+
+process.on("SIGTERM", async () => {
+  await closeDatabase();
   process.exit(0);
 });

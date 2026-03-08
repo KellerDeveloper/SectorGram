@@ -69,8 +69,24 @@ function loadServiceAccountKey() {
       console.error("[YandexGPT] В ключе сервисного аккаунта нет service_account_id или private_key");
       return null;
     }
+    pem = pem.replace(/\\n/g, "\n").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     const begin = pem.indexOf("-----BEGIN PRIVATE KEY-----");
     if (begin !== -1) pem = pem.slice(begin).trim();
+    const end = pem.indexOf("-----END PRIVATE KEY-----");
+    if (end !== -1) pem = pem.slice(0, end + "-----END PRIVATE KEY-----".length);
+    const lines = pem.split("\n").filter((line) => {
+      const t = line.trim();
+      return (
+        t === "-----BEGIN PRIVATE KEY-----" ||
+        t === "-----END PRIVATE KEY-----" ||
+        /^[A-Za-z0-9+/]+=*$/.test(t)
+      );
+    });
+    pem = lines.join("\n");
+    if (!pem.includes("-----BEGIN PRIVATE KEY-----") || !pem.includes("-----END PRIVATE KEY-----")) {
+      console.error("[YandexGPT] В ключе нет валидного PEM (BEGIN/END PRIVATE KEY)");
+      return null;
+    }
     serviceAccountKeyData = { serviceAccountId: id, privateKeyPem: pem };
     return serviceAccountKeyData;
   } catch (err) {

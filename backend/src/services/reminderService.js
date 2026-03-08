@@ -155,6 +155,11 @@ async function processEventsForOffset(offsetMs, flagField, hoursBefore) {
 }
 
 async function processUserReminders() {
+  const mongoose = (await import("mongoose")).default;
+  if (mongoose.connection.readyState !== 1) {
+    return;
+  }
+
   const now = new Date();
   const from = new Date(now.getTime() - WINDOW_MS);
   const to = new Date(now.getTime() + WINDOW_MS);
@@ -208,6 +213,10 @@ async function processUserReminders() {
 }
 
 async function checkAndSendEventReminders() {
+  const mongoose = (await import("mongoose")).default;
+  if (mongoose.connection.readyState !== 1) {
+    return;
+  }
   await processEventsForOffset(REMINDER_24H_MS, "reminder24hSent", 24);
   await processEventsForOffset(REMINDER_6H_MS, "reminder6hSent", 6);
   await processUserReminders();
