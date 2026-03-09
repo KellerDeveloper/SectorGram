@@ -153,26 +153,30 @@ function buildTextWithCustomEmoji(baseText) {
   const marker = "{{sektor_emoji}}";
   const placeholder = "🚫";
 
-  let text = baseText;
-  let offset;
+  const parts = baseText.split(marker);
 
-  const markerIndex = baseText.indexOf(marker);
-
-  if (markerIndex !== -1) {
-    text = baseText.replace(marker, placeholder);
-    offset = markerIndex;
-  } else {
+  if (parts.length === 1) {
     return { text: baseText, entities: undefined };
   }
 
-  const entities = [
-    {
-      type: "custom_emoji",
-      offset,
-      length: placeholder.length,
-      custom_emoji_id: TELEGRAM_CUSTOM_EMOJI_SEKTOR,
-    },
-  ];
+  let text = "";
+  const entities = [];
+
+  for (let i = 0; i < parts.length; i += 1) {
+    text += parts[i];
+
+    if (i < parts.length - 1) {
+      const offset = text.length;
+      text += placeholder;
+
+      entities.push({
+        type: "custom_emoji",
+        offset,
+        length: placeholder.length,
+        custom_emoji_id: TELEGRAM_CUSTOM_EMOJI_SEKTOR,
+      });
+    }
+  }
 
   return { text, entities };
 }
@@ -488,12 +492,18 @@ export async function handleTelegramUpdate(update) {
         );
 
         const header =
-          "Ближайшие мероприятия SEKTOR.\nВыберите одно из списка, чтобы посмотреть подробности:";
+          "Ближайшие мероприятия {{sektor_emoji}} SEKTOR {{sektor_emoji}}\nВыберите одно из списка, чтобы посмотреть подробности:";
 
-        await replaceCallbackMessage(callback, header, {
+        const {
+          text: headerWithEmoji,
+          entities: headerEntities,
+        } = buildTextWithCustomEmoji(header);
+
+        await replaceCallbackMessage(callback, headerWithEmoji, {
           reply_markup: {
             inline_keyboard: [...buttons, [openButtonInList]],
           },
+          ...(headerEntities ? { entities: headerEntities } : {}),
         });
 
         await callTelegramApi("answerCallbackQuery", {
@@ -1063,12 +1073,18 @@ export async function handleTelegramUpdate(update) {
       const header =
         "Ближайшие мероприятия {{sektor_emoji}} SEKTOR {{sektor_emoji}}\nВыберите одно из списка, чтобы посмотреть подробности:";
 
+      const {
+        text: headerWithEmoji,
+        entities: headerEntities,
+      } = buildTextWithCustomEmoji(header);
+
       const openButtonInEventsList = buildOpenAppButton(
         chatType,
         "Открыть приложение"
       );
 
-      await sendTelegramMessage(chatId, header, {
+      await sendTelegramMessage(chatId, headerWithEmoji, {
+        ...(headerEntities ? { entities: headerEntities } : {}),
         reply_markup: {
           inline_keyboard: [...buttons, [openButtonInEventsList]],
         },
