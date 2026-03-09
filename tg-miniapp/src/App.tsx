@@ -83,9 +83,7 @@ function App() {
   const [editDescription, setEditDescription] = useState('')
   const [ideaLoading, setIdeaLoading] = useState(false)
   const [ideaText, setIdeaText] = useState<string | null>(null)
-  const [ideaMood, setIdeaMood] = useState<'any' | 'party' | 'chill' | 'beer'>(
-    'any',
-  )
+  const [ideaMood, setIdeaMood] = useState('')
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -215,14 +213,7 @@ function App() {
     try {
       const { ideas } = await suggestMeetingIdea({
         city: 'Москва',
-        mood:
-          ideaMood === 'any'
-            ? undefined
-            : ideaMood === 'party'
-              ? 'тусить, шумное активное место'
-              : ideaMood === 'beer'
-                ? 'спокойно посидеть выпить пива'
-                : 'спокойно посидеть и пообщаться',
+        mood: ideaMood.trim() || undefined,
         exclude: excludeLines,
       })
       setIdeaText(ideas)
@@ -498,49 +489,6 @@ function App() {
         </div>
         {user && (
           <>
-            <div className="idea-mood">
-              <span className="idea-mood-label">Какой формат?</span>
-              <label className="idea-mood-option">
-                <input
-                  type="radio"
-                  name="idea-mood"
-                  value="any"
-                  checked={ideaMood === 'any'}
-                  onChange={() => setIdeaMood('any')}
-                />
-                Любой
-              </label>
-              <label className="idea-mood-option">
-                <input
-                  type="radio"
-                  name="idea-mood"
-                  value="party"
-                  checked={ideaMood === 'party'}
-                  onChange={() => setIdeaMood('party')}
-                />
-                Потусить
-              </label>
-              <label className="idea-mood-option">
-                <input
-                  type="radio"
-                  name="idea-mood"
-                  value="beer"
-                  checked={ideaMood === 'beer'}
-                  onChange={() => setIdeaMood('beer')}
-                />
-                Посидеть с пивом
-              </label>
-              <label className="idea-mood-option">
-                <input
-                  type="radio"
-                  name="idea-mood"
-                  value="chill"
-                  checked={ideaMood === 'chill'}
-                  onChange={() => setIdeaMood('chill')}
-                />
-                Спокойно пообщаться
-              </label>
-            </div>
             <div className="app-header-actions">
               <button
                 type="button"
@@ -549,6 +497,13 @@ function App() {
               >
                 {showCreateForm ? 'Отменить' : 'Создать мероприятие'}
               </button>
+              <input
+                type="text"
+                className="idea-mood-input"
+                placeholder="Опиши, как хочешь провести вечер"
+                value={ideaMood}
+                onChange={(e) => setIdeaMood(e.target.value)}
+              />
               <button
                 type="button"
                 className="create-idea-button"
