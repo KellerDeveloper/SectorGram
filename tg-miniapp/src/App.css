@@ -53,6 +53,30 @@
   gap: 8px;
 }
 
+.idea-mood {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--tg-theme-hint-color, #8b8b8f);
+}
+
+.idea-mood-label {
+  font-weight: 500;
+}
+
+.idea-mood-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.idea-mood-option input[type='radio'] {
+  accent-color: var(--tg-theme-button-color, #2ea6ff);
+}
+
 .app-filters {
   display: inline-flex;
   align-self: flex-start;

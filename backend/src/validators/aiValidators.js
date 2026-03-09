@@ -32,6 +32,12 @@ export const suggestMeetingIdeaValidation = [
     .trim()
     .isLength({ max: 100 })
     .withMessage("city не более 100 символов"),
+  body("mood")
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage("mood не более 50 символов"),
   body("exclude")
     .optional()
     .isArray({ max: 10 })

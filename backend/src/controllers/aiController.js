@@ -65,14 +65,16 @@ export async function suggestEventDescription(req, res, next) {
 
 /**
  * POST /ai/suggest-meeting-idea
- * Тело: { city?, exclude? } — город и список уже предложенных вариантов
+ * Тело: { city?, mood?, exclude? } — город, желаемый формат (тусить/посидеть и т.п.) и список уже предложенных вариантов
  * Возвращает: { ideas } — текст с 2–3 новыми идеями (без повторов)
  */
 export async function suggestMeetingIdea(req, res, next) {
   try {
-    const { city = "Москва", exclude } = req.body || {};
+    const { city = "Москва", mood, exclude } = req.body || {};
     const cityStr =
       typeof city === "string" ? city.trim() || "Москва" : "Москва";
+    const moodStr =
+      typeof mood === "string" ? mood.trim().toLowerCase() : "";
 
     const excludeLines = Array.isArray(exclude)
       ? exclude
@@ -81,6 +83,9 @@ export async function suggestMeetingIdea(req, res, next) {
       : [];
 
     let userPrompt = `Подскажи 2–3 идеи для встречи или мероприятия в городе: ${cityStr}.`;
+    if (moodStr) {
+      userPrompt += `\nУчитывай, что человек хочет: ${moodStr}.`;
+    }
     if (excludeLines.length) {
       userPrompt +=
         "\nРанее уже были предложены такие варианты (не повторяй их):\n" +
