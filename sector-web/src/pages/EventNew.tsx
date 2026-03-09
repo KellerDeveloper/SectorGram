@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { createEvent } from "../api/events";
 import type { CreateEventPayload } from "../api/events";
+import { suggestEventDescription } from "../api/ai";
 import { PlaceSearch } from "../components/PlaceSearch";
 import { YandexEventMap } from "../components/YandexEventMap";
 import styles from "./EventNew.module.css";
@@ -18,6 +19,7 @@ export function EventNew() {
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
   const [ymapsReady, setYmapsReady] = useState(!!(typeof window !== "undefined" && window.ymaps));
   const yandexApiKey = import.meta.env.VITE_YANDEX_MAP_API_KEY ?? "";
 
@@ -37,6 +39,36 @@ export function EventNew() {
     if (!dateStr) return "";
     const d = new Date(dateStr);
     return d.toISOString();
+  }
+
+  async function handleSuggestDescription() {
+    if (aiLoading) return;
+    setError("");
+    if (!title.trim() || !place.trim()) {
+      setError("Сначала заполните название и адрес, чтобы подсказать описание");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const data = await suggestEventDescription({
+        title: title.trim(),
+        place: place.trim(),
+        draft: description.trim() || undefined,
+      });
+      setDescription((prev) =>
+        prev && prev.trim()
+          ? `${prev.trim()}\n\n${data.description}`
+          : data.description
+      );
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Не удалось подсказать описание события"
+      );
+    } finally {
+      setAiLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -168,7 +200,17 @@ export function EventNew() {
             />
           </div>
           <div className={styles.field}>
-            <label className={styles.label}>Описание</label>
+            <div className={styles.labelRow}>
+              <label className={styles.label}>Описание</label>
+              <button
+                type="button"
+                className={styles.aiButton}
+                onClick={handleSuggestDescription}
+                disabled={aiLoading}
+              >
+                {aiLoading ? "Подсказываем…" : "Подсказать описание"}
+              </button>
+            </div>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
