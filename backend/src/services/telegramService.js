@@ -965,7 +965,7 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
+      "Это бот проекта 🚫SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 

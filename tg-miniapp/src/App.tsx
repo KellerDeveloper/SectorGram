@@ -497,13 +497,6 @@ function App() {
               >
                 {showCreateForm ? 'Отменить' : 'Создать мероприятие'}
               </button>
-              <input
-                type="text"
-                className="idea-mood-input"
-                placeholder="Опиши, как хочешь провести вечер"
-                value={ideaMood}
-                onChange={(e) => setIdeaMood(e.target.value)}
-              />
               <button
                 type="button"
                 className="create-idea-button"
@@ -515,6 +508,13 @@ function App() {
                   : 'Посоветовать идею для встречи'}
               </button>
             </div>
+            <input
+              type="text"
+              className="idea-mood-input"
+              placeholder="Опиши, как хочешь провести вечер"
+              value={ideaMood}
+              onChange={(e) => setIdeaMood(e.target.value)}
+            />
             {ideaText && (
               <div className="create-idea-result">
                 <p className="create-idea-label">Куда сходить:</p>
