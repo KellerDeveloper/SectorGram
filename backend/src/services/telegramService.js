@@ -150,14 +150,16 @@ function buildTextWithCustomEmoji(baseText) {
     return { text: baseText, entities: undefined };
   }
 
-  const placeholder = "X";
+  const placeholder = "🚫";
   const text = `${baseText} ${placeholder}`;
+
+  const offset = text.length - placeholder.length;
 
   const entities = [
     {
       type: "custom_emoji",
-      offset: text.length - 1,
-      length: 1,
+      offset,
+      length: placeholder.length,
       custom_emoji_id: TELEGRAM_CUSTOM_EMOJI_SEKTOR,
     },
   ];
