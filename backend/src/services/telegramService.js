@@ -998,12 +998,12 @@ export async function handleTelegramUpdate(update) {
       TELEGRAM_WEBAPP_URL?.trim() || "https://sektor.moscow";
 
     const welcomeText =
-      "Привет! {{sektor_emoji}}\n\n" +
-      "Это бот проекта SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
+      "Привет!\n\n" +
+      "Это бот проекта {{sektor_emoji}}SEKTOR{{sektor_emoji}}. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 
-    const openButton = buildOpenAppButton(chatType, "Открыть приложение {{sektor_emoji}}");
+    const openButton = buildOpenAppButton(chatType, "Открыть приложение");
 
     const { text: welcomeTextWithEmoji, entities } =
       buildTextWithCustomEmoji(welcomeText);
@@ -1061,7 +1061,7 @@ export async function handleTelegramUpdate(update) {
       });
 
       const header =
-        "Ближайшие мероприятия SEKTOR.\nВыберите одно из списка, чтобы посмотреть подробности:";
+        "Ближайшие мероприятия {{sektor_emoji}}SEKTOR{{sektor_emoji}}.\nВыберите одно из списка, чтобы посмотреть подробности:";
 
       const openButtonInEventsList = buildOpenAppButton(
         chatType,
