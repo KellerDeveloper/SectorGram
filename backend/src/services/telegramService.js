@@ -1061,7 +1061,7 @@ export async function handleTelegramUpdate(update) {
       });
 
       const header =
-        "Ближайшие мероприятия {{sektor_emoji}}SEKTOR{{sektor_emoji}}.\nВыберите одно из списка, чтобы посмотреть подробности:";
+        "Ближайшие мероприятия {{sektor_emoji}} SEKTOR {{sektor_emoji}}\nВыберите одно из списка, чтобы посмотреть подробности:";
 
       const openButtonInEventsList = buildOpenAppButton(
         chatType,
