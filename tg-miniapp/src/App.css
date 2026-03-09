@@ -46,6 +46,13 @@
   color: var(--tg-theme-hint-color, #8b8b8f);
 }
 
+.app-header-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .app-filters {
   display: inline-flex;
   align-self: flex-start;

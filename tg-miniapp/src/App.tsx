@@ -486,35 +486,26 @@ function App() {
           </button>
         </div>
         {user && (
-          <div style={{ marginTop: 8 }}>
-            <button
-              type="button"
-              className="event-action event-action--primary"
-              onClick={() => setShowCreateForm((v) => !v)}
-            >
-              {showCreateForm ? 'Отменить' : 'Создать мероприятие'}
-            </button>
-          </div>
-        )}
-      </header>
-
-      <main className="app-main">
-        {loading && <div className="state state--muted">Загрузка…</div>}
-        {!loading && error && (
-          <div className="state state--error">{error}</div>
-        )}
-
-        {!loading && user && showCreateForm && (
-          <section className="create-card">
-            <h2 className="create-card-title">Новое мероприятие</h2>
-            <button
-              type="button"
-              className="create-idea-button"
-              onClick={handleSuggestMeetingIdea}
-              disabled={ideaLoading}
-            >
-              {ideaLoading ? 'Генерируем идеи…' : 'Посоветовать идею для встречи'}
-            </button>
+          <>
+            <div className="app-header-actions">
+              <button
+                type="button"
+                className="event-action event-action--primary"
+                onClick={() => setShowCreateForm((v) => !v)}
+              >
+                {showCreateForm ? 'Отменить' : 'Создать мероприятие'}
+              </button>
+              <button
+                type="button"
+                className="create-idea-button"
+                onClick={handleSuggestMeetingIdea}
+                disabled={ideaLoading}
+              >
+                {ideaLoading
+                  ? 'Генерируем идеи…'
+                  : 'Посоветовать идею для встречи'}
+              </button>
+            </div>
             {ideaText && (
               <div className="create-idea-result">
                 <p className="create-idea-label">Куда сходить:</p>
@@ -534,6 +525,19 @@ function App() {
                   ))}
               </div>
             )}
+          </>
+        )}
+      </header>
+
+      <main className="app-main">
+        {loading && <div className="state state--muted">Загрузка…</div>}
+        {!loading && error && (
+          <div className="state state--error">{error}</div>
+        )}
+
+        {!loading && user && showCreateForm && (
+          <section className="create-card">
+            <h2 className="create-card-title">Новое мероприятие</h2>
             <form id="create-form" className="create-form" onSubmit={handleCreateEvent}>
               <div className="create-form-row">
                 <label htmlFor="title">Название</label>
