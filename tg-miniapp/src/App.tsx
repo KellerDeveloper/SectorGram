@@ -202,10 +202,18 @@ function App() {
   async function handleSuggestMeetingIdea() {
     if (!user || ideaLoading) return
     setIdeaLoading(true)
-    setIdeaText(null)
     setError('')
+
+    const excludeLines = (ideaText ?? '')
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+
     try {
-      const { ideas } = await suggestMeetingIdea({ city: 'Москва' })
+      const { ideas } = await suggestMeetingIdea({
+        city: 'Москва',
+        exclude: excludeLines,
+      })
       setIdeaText(ideas)
     } catch (err) {
       if (err instanceof Error) {

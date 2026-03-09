@@ -65,19 +65,32 @@ export async function suggestEventDescription(req, res, next) {
 
 /**
  * POST /ai/suggest-meeting-idea
- * Тело: { city? } — опционально город для контекста
- * Возвращает: { ideas } — текст с 2–3 идеями куда сходить (название + место)
+ * Тело: { city?, exclude? } — город и список уже предложенных вариантов
+ * Возвращает: { ideas } — текст с 2–3 новыми идеями (без повторов)
  */
 export async function suggestMeetingIdea(req, res, next) {
   try {
-    const { city = "Москва" } = req.body || {};
-    const cityStr = typeof city === "string" ? city.trim() || "Москва" : "Москва";
+    const { city = "Москва", exclude } = req.body || {};
+    const cityStr =
+      typeof city === "string" ? city.trim() || "Москва" : "Москва";
 
-    const userPrompt = `Подскажи 2–3 идеи для встречи или мероприятия в городе: ${cityStr}.`;
+    const excludeLines = Array.isArray(exclude)
+      ? exclude
+          .map((v) => (typeof v === "string" ? v.trim() : ""))
+          .filter(Boolean)
+      : [];
+
+    let userPrompt = `Подскажи 2–3 идеи для встречи или мероприятия в городе: ${cityStr}.`;
+    if (excludeLines.length) {
+      userPrompt +=
+        "\nРанее уже были предложены такие варианты (не повторяй их):\n" +
+        excludeLines.join("\n");
+    }
+
     const systemPrompt =
       "Ты помогаешь придумать идеи, куда сходить с друзьями или коллегами. " +
       "Ответь списком из 2–3 вариантов. Каждый вариант в одной строке в формате: «Название — Адрес или место». " +
-      "Без нумерации и лишних слов. Пример: Боулинг — ул. Тверская, 1. Пиши на русском.";
+      "Не повторяй варианты из списка, если он указан. Без нумерации и лишних слов. Пример: Боулинг — ул. Тверская, 1. Пиши на русском.";
 
     const result = await complete(userPrompt, {
       systemPrompt,

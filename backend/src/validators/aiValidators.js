@@ -32,6 +32,14 @@ export const suggestMeetingIdeaValidation = [
     .trim()
     .isLength({ max: 100 })
     .withMessage("city не более 100 символов"),
+  body("exclude")
+    .optional()
+    .isArray({ max: 10 })
+    .withMessage("exclude должен быть массивом строк")
+    .custom((arr) =>
+      arr.every((v) => typeof v === "string" && v.trim().length <= 200)
+    )
+    .withMessage("каждый элемент exclude — строка до 200 символов"),
   handleValidationErrors,
 ];
 
