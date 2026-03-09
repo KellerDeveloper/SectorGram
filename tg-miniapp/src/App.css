@@ -56,7 +56,9 @@
 .idea-mood-input {
   margin-top: 6px;
   width: 100%;
-  min-width: 0;
+  max-width: 260px;
+  min-width: 160px;
+  align-self: flex-start;
   padding: 6px 10px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.16);

@@ -13,6 +13,8 @@ const TELEGRAM_EVENT_CHAT_ID = process.env.TELEGRAM_EVENT_CHAT_ID || null;
 const TELEGRAM_EVENT_TOPIC_ID = process.env.TELEGRAM_EVENT_TOPIC_ID
   ? Number(process.env.TELEGRAM_EVENT_TOPIC_ID)
   : null;
+const TELEGRAM_CUSTOM_EMOJI_SEKTOR =
+  process.env.TELEGRAM_CUSTOM_EMOJI_SEKTOR || null;
 
 const TELEGRAM_API_BASE = TELEGRAM_BOT_TOKEN
   ? `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`
@@ -141,6 +143,26 @@ export async function sendTelegramMessage(chatId, text, extra = {}) {
   }
 
   return callTelegramApi("sendMessage", payload);
+}
+
+function buildTextWithCustomEmoji(baseText) {
+  if (!TELEGRAM_CUSTOM_EMOJI_SEKTOR) {
+    return { text: baseText, entities: undefined };
+  }
+
+  const placeholder = "X";
+  const text = `${baseText} ${placeholder}`;
+
+  const entities = [
+    {
+      type: "custom_emoji",
+      offset: text.length - 1,
+      length: 1,
+      custom_emoji_id: TELEGRAM_CUSTOM_EMOJI_SEKTOR,
+    },
+  ];
+
+  return { text, entities };
 }
 
 async function replaceCallbackMessage(callback, text, extra = {}) {
@@ -965,13 +987,19 @@ export async function handleTelegramUpdate(update) {
 
     const welcomeText =
       "Привет! 👋\n\n" +
-      "Это бот проекта 🚫SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
+      "Это бот проекта SEKTOR. Нажми кнопку ниже, чтобы открыть приложение.\n\n" +
       "Команды:\n" +
       "/events — список ближайших мероприятий.";
 
     const openButton = buildOpenAppButton(chatType, "Открыть приложение");
 
-    await sendTelegramMessage(chatId, welcomeText, {
+    const { text: welcomeTextWithEmoji, entities } =
+      buildTextWithCustomEmoji(welcomeText);
+
+    await callTelegramApi("sendMessage", {
+      chat_id: chatId,
+      text: welcomeTextWithEmoji,
+      entities,
       reply_markup: {
         inline_keyboard: [[openButton]],
       },
