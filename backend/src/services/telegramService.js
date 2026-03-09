@@ -126,10 +126,13 @@ export function validateTelegramWebAppInitData(initData) {
 export async function sendTelegramMessage(chatId, text, extra = {}) {
   if (!chatId) return null;
 
+  const hasEntities =
+    extra && Object.prototype.hasOwnProperty.call(extra, "entities");
+
   const payload = {
     chat_id: chatId,
     text,
-    parse_mode: "HTML",
+    ...(hasEntities ? {} : { parse_mode: "HTML" }),
     ...extra,
   };
 
