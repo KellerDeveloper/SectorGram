@@ -150,10 +150,20 @@ function buildTextWithCustomEmoji(baseText) {
     return { text: baseText, entities: undefined };
   }
 
+  const marker = "{{sektor_emoji}}";
   const placeholder = "🚫";
-  const text = `${baseText} ${placeholder}`;
 
-  const offset = text.length - placeholder.length;
+  let text = baseText;
+  let offset;
+
+  const markerIndex = baseText.indexOf(marker);
+
+  if (markerIndex !== -1) {
+    text = baseText.replace(marker, placeholder);
+    offset = markerIndex;
+  } else {
+    return { text: baseText, entities: undefined };
+  }
 
   const entities = [
     {
