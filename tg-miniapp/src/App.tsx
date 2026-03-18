@@ -15,6 +15,7 @@ import type { CurrentUser, UserRating } from './api/users'
 import { getCurrentUser, getUserRatings } from './api/users'
 import { setToken } from './api/client'
 import { loginWithTelegramWebApp } from './api/auth'
+import AdminPanel from './pages/admin/AdminPanel'
 
 type Filter = 'all' | 'mine'
 type Tab = 'events' | 'rating' | 'admin'
@@ -990,14 +991,7 @@ function App() {
           </section>
         )}
 
-        {activeTab === 'admin' && isAdmin && (
-          <section className="create-card">
-            <h2 className="create-card-title">Админка</h2>
-            <div className="state state--muted">
-              Здесь можно будет добавить административные инструменты.
-            </div>
-          </section>
-        )}
+        {activeTab === 'admin' && isAdmin && <AdminPanel />}
       </main>
     </div>
   )
