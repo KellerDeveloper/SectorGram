@@ -63,8 +63,20 @@ export async function getCurrentUser(userId) {
 }
 
 export async function getUserRatings({ limit = 50 } = {}) {
+  const now = new Date();
+
+  // Учитываем только прошедшие мероприятия:
+  // - старт уже наступил (`startsAt <= now`)
+  // - если `endsAt` задан — он тоже уже наступил (`endsAt <= now`)
+  // - если `endsAt` не задан — считаем событие прошедшим только по `startsAt`
   const baseMatch = {
     status: { $ne: "cancelled" },
+    startsAt: { $lte: now },
+    $or: [
+      { endsAt: { $exists: false } },
+      { endsAt: null },
+      { endsAt: { $lte: now } },
+    ],
   };
 
   // Кол-во созданных мероприятий по пользователю

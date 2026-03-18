@@ -10,7 +10,9 @@ import { userSearchValidation } from "../validators/userValidators.js";
 
 const router = express.Router();
 
-router.use(authMiddleware);
+// GET /users/ratings
+// Доступно всем (без авторизации) — показываем рейтинг в миниапке.
+router.get("/ratings", getUserRatingsController);
 
 // GET /users/online
 router.get("/online", getOnlineUsersController);
@@ -21,8 +23,7 @@ router.get("/search", userSearchValidation, searchUsersController);
 // GET /users/me
 router.get("/me", getMeController);
 
-// GET /users/ratings
-router.get("/ratings", getUserRatingsController);
+router.use(authMiddleware);
 
 export default router;
 

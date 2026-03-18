@@ -110,7 +110,8 @@ function App() {
   // Загружаем рейтинг при открытии вкладки "Рейтинг" (доступна всем)
   useEffect(() => {
     if (activeTab !== 'rating') return
-    if (ratingsLoading || ratings.length > 0) return
+    if (ratings.length > 0) return
+    if (ratingsLoading) return
 
     let cancelled = false
 
@@ -140,7 +141,7 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [activeTab, ratings.length, ratingsLoading])
+  }, [activeTab, ratings.length])
 
   useEffect(() => {
     const q = placeQuery.trim()
