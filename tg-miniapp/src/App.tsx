@@ -11,12 +11,13 @@ import {
 } from './api/events'
 import { searchPlaces, type YandexPlace } from './api/yandex'
 import { suggestMeetingIdea } from './api/ai'
-import type { CurrentUser } from './api/users'
-import { getCurrentUser } from './api/users'
+import type { CurrentUser, UserRating } from './api/users'
+import { getCurrentUser, getUserRatings } from './api/users'
 import { setToken } from './api/client'
 import { loginWithTelegramWebApp } from './api/auth'
 
 type Filter = 'all' | 'mine'
+type Tab = 'events' | 'admin'
 
 function getYandexStaticMapUrl(lat: number, lon: number, zoom = 15) {
   const ll = `${lon},${lat}` // порядок: lon,lat
@@ -73,6 +74,7 @@ function App() {
   const [placeResults, setPlaceResults] = useState<YandexPlace[]>([])
   const [selectedPlace, setSelectedPlace] = useState<YandexPlace | null>(null)
   const [filter, setFilter] = useState<Filter>('all')
+  const [activeTab, setActiveTab] = useState<Tab>('events')
   const [actionEventId, setActionEventId] = useState<string | null>(null)
   const [participantsEventId, setParticipantsEventId] = useState<string | null>(null)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
@@ -84,6 +86,9 @@ function App() {
   const [ideaLoading, setIdeaLoading] = useState(false)
   const [ideaText, setIdeaText] = useState<string | null>(null)
   const [ideaMood, setIdeaMood] = useState('')
+  const [ratings, setRatings] = useState<UserRating[]>([])
+  const [ratingsLoading, setRatingsLoading] = useState(false)
+  const [ratingsError, setRatingsError] = useState<string | null>(null)
 
   // Инициализация Telegram WebApp (цвета, размер)
   useEffect(() => {
@@ -99,6 +104,43 @@ function App() {
       }
     }
   }, [])
+
+  const isAdmin = user?.id === '69a5e6ee5ec53874d8fcc6b0'
+
+  useEffect(() => {
+    if (!isAdmin) return
+    if (activeTab !== 'admin') return
+    if (ratingsLoading || ratings.length > 0) return
+
+    let cancelled = false
+
+    async function loadRatings() {
+      setRatingsLoading(true)
+      setRatingsError(null)
+      try {
+        const items = await getUserRatings(50)
+        if (cancelled) return
+        setRatings(items)
+      } catch (err) {
+        if (cancelled) return
+        if (err instanceof Error) {
+          setRatingsError(err.message)
+        } else {
+          setRatingsError('Не удалось загрузить рейтинг пользователей')
+        }
+      } finally {
+        if (!cancelled) {
+          setRatingsLoading(false)
+        }
+      }
+    }
+
+    loadRatings()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeTab, isAdmin, ratings.length, ratingsLoading])
 
   useEffect(() => {
     const q = placeQuery.trim()
@@ -487,6 +529,28 @@ function App() {
             Я иду
           </button>
         </div>
+        {isAdmin && (
+          <div className="app-tabs">
+            <button
+              type="button"
+              className={`filter-button ${
+                activeTab === 'events' ? 'filter-button--active' : ''
+              }`}
+              onClick={() => setActiveTab('events')}
+            >
+              События
+            </button>
+            <button
+              type="button"
+              className={`filter-button ${
+                activeTab === 'admin' ? 'filter-button--active' : ''
+              }`}
+              onClick={() => setActiveTab('admin')}
+            >
+              Админка
+            </button>
+          </div>
+        )}
         {user && (
           <>
             <div className="app-header-actions">
@@ -539,12 +603,14 @@ function App() {
       </header>
 
       <main className="app-main">
-        {loading && <div className="state state--muted">Загрузка…</div>}
-        {!loading && error && (
-          <div className="state state--error">{error}</div>
-        )}
+        {activeTab === 'events' && (
+          <>
+            {loading && <div className="state state--muted">Загрузка…</div>}
+            {!loading && error && (
+              <div className="state state--error">{error}</div>
+            )}
 
-        {!loading && user && showCreateForm && (
+            {!loading && user && showCreateForm && (
           <section className="create-card">
             <h2 className="create-card-title">Новое мероприятие</h2>
             <form id="create-form" className="create-form" onSubmit={handleCreateEvent}>
@@ -660,15 +726,15 @@ function App() {
               </div>
             </form>
           </section>
-        )}
+            )}
 
-        {!loading && !error && visibleEvents.length === 0 && (
-          <div className="state state--muted">
-            Нет предстоящих мероприятий.
-          </div>
-        )}
+            {!loading && !error && visibleEvents.length === 0 && (
+              <div className="state state--muted">
+                Нет предстоящих мероприятий.
+              </div>
+            )}
 
-        {!loading && !error && visibleEvents.length > 0 && (
+            {!loading && !error && visibleEvents.length > 0 && (
           <ul className="events-list">
             {visibleEvents.map((ev) => {
               const going = isParticipant(ev)
@@ -872,6 +938,46 @@ function App() {
               )
             })}
           </ul>
+            )}
+          </>
+        )}
+
+        {activeTab === 'admin' && isAdmin && (
+          <section className="create-card">
+            <h2 className="create-card-title">Админка</h2>
+            {ratingsLoading && (
+              <div className="state state--muted">Загрузка рейтинга…</div>
+            )}
+            {!ratingsLoading && ratingsError && (
+              <div className="state state--error">{ratingsError}</div>
+            )}
+            {!ratingsLoading && !ratingsError && ratings.length === 0 && (
+              <div className="state state--muted">
+                Пока нет данных для рейтинга.
+              </div>
+            )}
+            {!ratingsLoading && !ratingsError && ratings.length > 0 && (
+              <ul className="events-list">
+                {ratings.map((r, index) => (
+                  <li key={r.userId} className="event-card">
+                    <div className="event-header">
+                      <div className="event-title-row">
+                        <h3 className="event-title">
+                          #{index + 1} {r.name || r.username || 'Без имени'}
+                        </h3>
+                      </div>
+                      <div className="event-meta">
+                        <span>Создал: {r.createdEvents}</span>
+                        <span>Посетил: {r.attendedEvents}</span>
+                        <span>Участников на его событиях: {r.interestScore}</span>
+                        <span>Рейтинг: {r.ratingScore}</span>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         )}
       </main>
     </div>

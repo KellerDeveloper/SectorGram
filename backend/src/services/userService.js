@@ -67,6 +67,7 @@ export async function getUserRatings({ limit = 50 } = {}) {
     status: { $ne: "cancelled" },
   };
 
+  // Кол-во созданных мероприятий по пользователю
   const creatorsAgg = await Event.aggregate([
     { $match: baseMatch },
     {
@@ -77,6 +78,7 @@ export async function getUserRatings({ limit = 50 } = {}) {
     },
   ]);
 
+  // Кол-во посещённых мероприятий по пользователю
   const participantsAgg = await Event.aggregate([
     { $match: baseMatch },
     { $unwind: "$participants" },
@@ -84,6 +86,30 @@ export async function getUserRatings({ limit = 50 } = {}) {
       $group: {
         _id: "$participants",
         attendedCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // «Заинтересованность» — сколько людей пришло на мероприятия конкретного создателя
+  // Для каждого события считаем размер массива participants и суммируем по creatorId.
+  const interestAgg = await Event.aggregate([
+    { $match: baseMatch },
+    {
+      $project: {
+        creatorId: 1,
+        participantsCount: {
+          $cond: [
+            { $isArray: "$participants" },
+            { $size: "$participants" },
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $group: {
+        _id: "$creatorId",
+        totalParticipantsOnCreatedEvents: { $sum: "$participantsCount" },
       },
     },
   ]);
@@ -96,6 +122,7 @@ export async function getUserRatings({ limit = 50 } = {}) {
       userId,
       createdCount: 0,
       attendedCount: 0,
+      interestScore: 0,
     };
     existing.createdCount += item.createdCount || 0;
     statsByUserId.set(userId, existing);
@@ -107,8 +134,21 @@ export async function getUserRatings({ limit = 50 } = {}) {
       userId,
       createdCount: 0,
       attendedCount: 0,
+      interestScore: 0,
     };
     existing.attendedCount += item.attendedCount || 0;
+    statsByUserId.set(userId, existing);
+  }
+
+  for (const item of interestAgg) {
+    const userId = String(item._id);
+    const existing = statsByUserId.get(userId) || {
+      userId,
+      createdCount: 0,
+      attendedCount: 0,
+      interestScore: 0,
+    };
+    existing.interestScore += item.totalParticipantsOnCreatedEvents || 0;
     statsByUserId.set(userId, existing);
   }
 
@@ -137,7 +177,13 @@ export async function getUserRatings({ limit = 50 } = {}) {
 
       const createdEvents = stat.createdCount || 0;
       const attendedEvents = stat.attendedCount || 0;
-      const score = createdEvents + attendedEvents;
+      const interestScore = stat.interestScore || 0;
+
+      // Итоговый рейтинг:
+      //  - +1 за каждое созданное мероприятие
+      //  - +1 за каждое посещённое мероприятие
+      //  - +1 за каждого участника на созданных пользователем мероприятиях
+      const score = createdEvents + attendedEvents + interestScore;
 
       return {
         userId: stat.userId,
@@ -146,6 +192,7 @@ export async function getUserRatings({ limit = 50 } = {}) {
         avatar: user.avatar,
         createdEvents,
         attendedEvents,
+        interestScore,
         ratingScore: score,
       };
     })

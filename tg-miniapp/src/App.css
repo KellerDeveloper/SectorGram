@@ -76,6 +76,16 @@
   gap: 2px;
 }
 
+.app-tabs {
+  margin-top: 6px;
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  border-radius: 999px;
+  background-color: var(--tg-theme-secondary-bg-color, #181b20);
+  gap: 2px;
+}
+
 .filter-button {
   border: none;
   background: transparent;
