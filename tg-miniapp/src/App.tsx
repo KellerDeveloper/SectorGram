@@ -17,7 +17,7 @@ import { setToken } from './api/client'
 import { loginWithTelegramWebApp } from './api/auth'
 
 type Filter = 'all' | 'mine'
-type Tab = 'events' | 'admin'
+type Tab = 'events' | 'rating' | 'admin'
 
 function getYandexStaticMapUrl(lat: number, lon: number, zoom = 15) {
   const ll = `${lon},${lat}` // порядок: lon,lat
@@ -107,9 +107,9 @@ function App() {
 
   const isAdmin = user?.id === '69a5e6ee5ec53874d8fcc6b0'
 
+  // Загружаем рейтинг при открытии вкладки "Рейтинг" (доступна всем)
   useEffect(() => {
-    if (!isAdmin) return
-    if (activeTab !== 'admin') return
+    if (activeTab !== 'rating') return
     if (ratingsLoading || ratings.length > 0) return
 
     let cancelled = false
@@ -140,7 +140,7 @@ function App() {
     return () => {
       cancelled = true
     }
-  }, [activeTab, isAdmin, ratings.length, ratingsLoading])
+  }, [activeTab, ratings.length, ratingsLoading])
 
   useEffect(() => {
     const q = placeQuery.trim()
@@ -509,6 +509,37 @@ function App() {
         <p className="app-subtitle">
           Отслеживайте предстоящие события и отмечайтесь, где вы участвуете.
         </p>
+        <div className="app-tabs">
+          <button
+            type="button"
+            className={`filter-button ${
+              activeTab === 'events' ? 'filter-button--active' : ''
+            }`}
+            onClick={() => setActiveTab('events')}
+          >
+            События
+          </button>
+          <button
+            type="button"
+            className={`filter-button ${
+              activeTab === 'rating' ? 'filter-button--active' : ''
+            }`}
+            onClick={() => setActiveTab('rating')}
+          >
+            Рейтинг
+          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              className={`filter-button ${
+                activeTab === 'admin' ? 'filter-button--active' : ''
+              }`}
+              onClick={() => setActiveTab('admin')}
+            >
+              Админка
+            </button>
+          )}
+        </div>
         <div className="app-filters">
           <button
             type="button"
@@ -529,28 +560,6 @@ function App() {
             Я иду
           </button>
         </div>
-        {isAdmin && (
-          <div className="app-tabs">
-            <button
-              type="button"
-              className={`filter-button ${
-                activeTab === 'events' ? 'filter-button--active' : ''
-              }`}
-              onClick={() => setActiveTab('events')}
-            >
-              События
-            </button>
-            <button
-              type="button"
-              className={`filter-button ${
-                activeTab === 'admin' ? 'filter-button--active' : ''
-              }`}
-              onClick={() => setActiveTab('admin')}
-            >
-              Админка
-            </button>
-          </div>
-        )}
         {user && (
           <>
             <div className="app-header-actions">
@@ -942,9 +951,9 @@ function App() {
           </>
         )}
 
-        {activeTab === 'admin' && isAdmin && (
+        {activeTab === 'rating' && (
           <section className="create-card">
-            <h2 className="create-card-title">Админка</h2>
+            <h2 className="create-card-title">Рейтинг пользователей</h2>
             {ratingsLoading && (
               <div className="state state--muted">Загрузка рейтинга…</div>
             )}
@@ -977,6 +986,15 @@ function App() {
                 ))}
               </ul>
             )}
+          </section>
+        )}
+
+        {activeTab === 'admin' && isAdmin && (
+          <section className="create-card">
+            <h2 className="create-card-title">Админка</h2>
+            <div className="state state--muted">
+              Здесь можно будет добавить административные инструменты.
+            </div>
           </section>
         )}
       </main>
