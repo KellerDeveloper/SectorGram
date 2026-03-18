@@ -21,12 +21,7 @@ export default function AdminBroadcast() {
         eventId: type === 'event_participants' ? eventId.trim() : undefined,
       }
       const res = await adminBroadcast(payload)
-      const recipients = res?.recipients
-      setSuccess(
-        recipients !== undefined
-          ? `Готово. Отправлено: ${recipients}`
-          : 'Готово',
-      )
+      setSuccess(`Готово. Отправлено: ${res.recipients}`)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Не удалось отправить рассылку'
       setError(msg)

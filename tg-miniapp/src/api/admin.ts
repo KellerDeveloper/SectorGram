@@ -114,12 +114,17 @@ export async function adminResetReminder(reminderId: string) {
 
 export type AdminBroadcastType = 'all' | 'event_participants'
 
+export type AdminBroadcastResponse = {
+  success: boolean
+  recipients: number
+}
+
 export async function adminBroadcast(payload: {
   type: AdminBroadcastType
   message: string
   eventId?: string
-}) {
-  return api.post('/admin/broadcast', payload)
+}): Promise<AdminBroadcastResponse> {
+  return api.post<AdminBroadcastResponse>('/admin/broadcast', payload)
 }
 
 export async function adminStatsUsers(params?: { limit?: number }) {
