@@ -4,6 +4,7 @@ import {
   getOnlineUsersController,
   searchUsersController,
   getMeController,
+  getUserRatingsController,
 } from "../controllers/userController.js";
 import { userSearchValidation } from "../validators/userValidators.js";
 
@@ -19,6 +20,9 @@ router.get("/search", userSearchValidation, searchUsersController);
 
 // GET /users/me
 router.get("/me", getMeController);
+
+// GET /users/ratings
+router.get("/ratings", getUserRatingsController);
 
 export default router;
 

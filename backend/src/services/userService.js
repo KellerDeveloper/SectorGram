@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import User from "../models/User.js";
+import Event from "../models/Event.js";
 
 export async function getOnlineUsersDetailed(onlineIds) {
   const users = await User.find({ _id: { $in: onlineIds } }).select(
@@ -59,5 +60,107 @@ export async function getCurrentUser(userId) {
     username: user.username,
     avatar: user.avatar,
   };
+}
+
+export async function getUserRatings({ limit = 50 } = {}) {
+  const baseMatch = {
+    status: { $ne: "cancelled" },
+  };
+
+  const creatorsAgg = await Event.aggregate([
+    { $match: baseMatch },
+    {
+      $group: {
+        _id: "$creatorId",
+        createdCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const participantsAgg = await Event.aggregate([
+    { $match: baseMatch },
+    { $unwind: "$participants" },
+    {
+      $group: {
+        _id: "$participants",
+        attendedCount: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const statsByUserId = new Map();
+
+  for (const item of creatorsAgg) {
+    const userId = String(item._id);
+    const existing = statsByUserId.get(userId) || {
+      userId,
+      createdCount: 0,
+      attendedCount: 0,
+    };
+    existing.createdCount += item.createdCount || 0;
+    statsByUserId.set(userId, existing);
+  }
+
+  for (const item of participantsAgg) {
+    const userId = String(item._id);
+    const existing = statsByUserId.get(userId) || {
+      userId,
+      createdCount: 0,
+      attendedCount: 0,
+    };
+    existing.attendedCount += item.attendedCount || 0;
+    statsByUserId.set(userId, existing);
+  }
+
+  if (!statsByUserId.size) {
+    return [];
+  }
+
+  const userIds = Array.from(statsByUserId.keys()).map(
+    (id) => new mongoose.Types.ObjectId(id)
+  );
+
+  const users = await User.find({ _id: { $in: userIds } }).select(
+    "name avatar username"
+  );
+
+  const usersById = new Map(
+    users.map((u) => [u._id.toString(), u])
+  );
+
+  const withScores = Array.from(statsByUserId.values())
+    .map((stat) => {
+      const user = usersById.get(stat.userId);
+      if (!user) {
+        return null;
+      }
+
+      const createdEvents = stat.createdCount || 0;
+      const attendedEvents = stat.attendedCount || 0;
+      const score = createdEvents + attendedEvents;
+
+      return {
+        userId: stat.userId,
+        name: user.name,
+        username: user.username,
+        avatar: user.avatar,
+        createdEvents,
+        attendedEvents,
+        ratingScore: score,
+      };
+    })
+    .filter(Boolean);
+
+  withScores.sort((a, b) => {
+    if (b.ratingScore !== a.ratingScore) {
+      return b.ratingScore - a.ratingScore;
+    }
+    if (b.createdEvents !== a.createdEvents) {
+      return b.createdEvents - a.createdEvents;
+    }
+    return b.attendedEvents - a.attendedEvents;
+  });
+
+  return withScores.slice(0, limit);
 }
 

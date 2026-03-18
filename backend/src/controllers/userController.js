@@ -3,6 +3,7 @@ import {
   searchUsers,
   getCurrentUser,
 } from "../services/userService.js";
+import { getUserRatings } from "../services/userService.js";
 
 export async function getOnlineUsersController(req, res, next) {
   try {
@@ -45,6 +46,29 @@ export async function getMeController(req, res, next) {
     res.json(user);
   } catch (error) {
     console.error("Ошибка получения текущего пользователя:", error);
+    next(error);
+  }
+}
+
+export async function getUserRatingsController(req, res, next) {
+  try {
+    const limitRaw = req.query.limit;
+    let limit = 50;
+
+    if (typeof limitRaw === "string") {
+      const parsed = Number.parseInt(limitRaw, 10);
+      if (!Number.isNaN(parsed) && parsed > 0 && parsed <= 200) {
+        limit = parsed;
+      }
+    }
+
+    const ratings = await getUserRatings({ limit });
+
+    res.json({
+      items: ratings,
+    });
+  } catch (error) {
+    console.error("Ошибка получения рейтинга пользователей:", error);
     next(error);
   }
 }
